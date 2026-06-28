@@ -302,6 +302,16 @@
       background: linear-gradient(180deg, #eef6ff 0%, #e3f0ff 100%);
     }
 
+    .skill-card.is-option-active {
+      border-color: #9fc8ec;
+      background: linear-gradient(180deg, #edf5ff 0%, #e5f0fb 100%);
+      box-shadow: inset 0 0 0 1px rgba(75, 166, 245, .08);
+    }
+
+    .skill-card.is-line-break.is-option-active {
+      background: linear-gradient(180deg, #e6f1ff 0%, #dbeafa 100%);
+    }
+
     .skill-card.is-dragging {
       opacity: .56;
     }
@@ -367,14 +377,24 @@
     }
 
     .skill-inline-icon {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       width: 1.05em;
       height: 1.05em;
       vertical-align: -.16em;
       margin: 0 .16em;
+      user-select: all;
+    }
+
+    .skill-inline-icon img {
+      width: 100%;
+      height: 100%;
       object-fit: contain;
+      display: block;
       user-select: none;
       -webkit-user-drag: none;
+      pointer-events: none;
     }
 
     .skill-editor:focus {
@@ -419,12 +439,49 @@
       align-items: start;
     }
 
+    .skill-card.is-transparent-bg .skill-card-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
     .skill-card-grid .full {
       grid-column: 1 / -1;
     }
 
-    .skill-role-field select {
+    .skill-role-field select,
+    .skill-width-field input {
       width: 100%;
+    }
+
+    .skill-options-row {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .skill-option-toggle {
+      min-width: 0;
+      min-height: 34px;
+      border: 1px solid #c6def5;
+      border-radius: 8px;
+      background: #f8fbff;
+      padding: 7px 9px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: #315f86;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .skill-option-toggle input {
+      width: 16px;
+      height: 16px;
+      flex: 0 0 auto;
+      margin: 0;
+      accent-color: var(--accent);
     }
 
     .skill-text-tools,
@@ -437,6 +494,7 @@
     }
 
     .skill-role-field label,
+    .skill-width-field label,
     .skill-text-tools label,
     .skill-editor-wrap label {
       display: block;
@@ -1298,10 +1356,33 @@
             </div>
           </details>
 
+        </div>
+      </section>
+
+      <section class="section">
+        <details class="config-group" open>
+          <summary>
+            角色
+            <span class="summary-meta">头像上传与裁剪</span>
+          </summary>
+          <div class="config-body">
+            <div class="role-block-head">
+              <h2>角色列表</h2>
+              <button class="soft" id="addRole">+添加</button>
+            </div>
+            <div id="roleList" class="role-list"></div>
+            <p class="hint">头像可以上传本地图片，也可以填写图片 URL。本地上传最稳定，导出 PNG 不会受跨站限制影响。</p>
+          </div>
+        </details>
+      </section>
+
+      <section class="section">
+        <h2>胶囊设置</h2>
+        <div class="config-stack">
           <details class="config-group" open>
             <summary>
-              胶囊
-              <span class="summary-meta">长宽、间距、底图</span>
+              样式
+              <span class="summary-meta">长宽、字体、底图</span>
             </summary>
             <div class="config-body">
               <div class="grid three">
@@ -1345,6 +1426,35 @@
                   <input id="capsuleRightPad" type="number" min="0" value="36">
                 </div>
                 <div class="full">
+                  <label for="fontFamily">字体</label>
+                  <div class="file-line">
+                    <input id="fontFamily" list="fontFamilyOptions" value="Microsoft YaHei" placeholder="输入或选择字体名称">
+                    <button id="loadFonts" type="button">读取本机字体</button>
+                  </div>
+                  <datalist id="fontFamilyOptions"></datalist>
+                </div>
+                <div>
+                  <label for="fontSize">字体大小 px</label>
+                  <input id="fontSize" type="number" min="8" value="86">
+                </div>
+                <div>
+                  <label for="fontColor">文字颜色</label>
+                  <input id="fontColor" type="color" value="#ffffff" class="color-input">
+                </div>
+                <div>
+                  <label for="fontWeight">字重</label>
+                  <select id="fontWeight">
+                    <option value="700">粗体</option>
+                    <option value="900" selected>特粗</option>
+                    <option value="400">常规</option>
+                  </select>
+                </div>
+                <div class="full">
+                  <div class="file-line">
+                    <label for="singleRoleCapsuleMode">单角色自定义底图</label>
+                    <input id="singleRoleCapsuleMode" type="checkbox">
+                    <select id="singleRoleCapsuleTarget" style="display:none;"></select>
+                  </div>
                   <label for="capsuleFile">自定义胶囊底图</label>
                   <div class="file-line">
                     <div class="file-picker">
@@ -1407,52 +1517,9 @@
       </section>
 
       <section class="section">
-        <details class="config-group" open>
-          <summary>
-            角色
-            <span class="summary-meta">头像上传与裁剪</span>
-          </summary>
-          <div class="config-body">
-            <div class="role-block-head">
-              <h2>角色列表</h2>
-              <button class="soft" id="addRole">+添加</button>
-            </div>
-            <div id="roleList" class="role-list"></div>
-            <p class="hint">头像可以上传本地图片，也可以填写图片 URL。本地上传最稳定，导出 PNG 不会受跨站限制影响。</p>
-          </div>
-        </details>
-      </section>
-
-      <section class="section">
         <div class="skill-block-head">
           <h2>胶囊单元</h2>
           <button class="soft" id="addSkill">+添加</button>
-        </div>
-        <div class="grid">
-          <div class="full">
-            <label for="fontFamily">字体</label>
-            <div class="file-line">
-              <input id="fontFamily" list="fontFamilyOptions" value="Microsoft YaHei" placeholder="输入或选择字体名称">
-              <button id="loadFonts" type="button">读取本机字体</button>
-            </div>
-            <datalist id="fontFamilyOptions"></datalist>
-          </div>
-          <div>
-            <label for="fontSize">字体大小 px</label>
-            <input id="fontSize" type="number" min="8" value="86">
-          </div>
-          <div>
-            <label for="fontColor">文字颜色</label>
-            <input id="fontColor" type="color" value="#ffffff" class="color-input">
-          </div>
-          <div>
-            <label for="fontWeight">字重</label>
-            <select id="fontWeight">
-              <option value="700">粗体</option>
-              <option value="900" selected>特粗</option>
-              <option value="400">常规</option>
-            </select>
-          </div>
         </div>
         <div id="skillList" class="skill-list" style="margin-top: 12px;"></div>
       </section>
@@ -1463,7 +1530,6 @@
         <h2>预览</h2>
         <div class="actions">
           <button id="fitCanvas">按内容调整画布</button>
-          <button id="resetDemo">还原示例</button>
           <button id="exportCapsules">胶囊独立导出</button>
           <button class="primary" id="download">下载 PNG</button>
         </div>
@@ -1477,6 +1543,7 @@
 
   <div id="globalSkillWorkspace" class="global-skill-workspace" aria-live="polite"></div>
 
+  <script src="assets/default-preset.js"></script>
   <script>
     window.skillIconDataUrls = {
   "mouse-left": "data:image/png;base64,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",
@@ -1506,6 +1573,11 @@
       "textAlign", "fontFamily", "fontSize", "fontColor", "fontWeight"
     ];
 
+    const capsuleStyleControlIds = [
+      "capsuleWidth", "capsuleHeight", "capsuleGap", "capsuleX", "capsuleY",
+      "capsuleGapX", "capsuleRightPad", "capsuleWidthMode", "capsuleColor"
+    ];
+
     const PRESET_STORAGE_KEY = "wuthering_combo_builder_presets_v1";
     const PRESET_DB_NAME = "wuthering_combo_builder_db";
     const PRESET_DB_STORE = "presets";
@@ -1514,6 +1586,9 @@
       layoutMode: "vertical",
       roles: [],
       skills: [],
+      singleRoleCapsuleMode: false,
+      singleRoleCapsuleTarget: "",
+      globalCapsuleStyleControls: null,
       capsuleImage: "",
       capsuleImageOriginal: "",
       capsuleCrop: null,
@@ -1527,6 +1602,7 @@
     let activeCapsuleCropDrag = null;
     let activeSkillDrag = null;
     let activeSkillWorkspaceId = null;
+    let drawRevision = 0;
     let skillWorkspaceOpen = false;
     let skillWorkspaceDrag = null;
     let suppressWorkspaceClick = false;
@@ -1758,6 +1834,8 @@
         controls: normalizedControls,
         roles: Array.isArray(data?.roles) ? data.roles.map(cloneRole) : [],
         skills: Array.isArray(data?.skills) ? data.skills.map(cloneSkill) : [],
+        singleRoleCapsuleMode: Boolean(data?.singleRoleCapsuleMode),
+        singleRoleCapsuleTarget: String(data?.singleRoleCapsuleTarget || ""),
         capsuleImage: String(data?.capsuleImage || ""),
         capsuleImageOriginal: String(data?.capsuleImageOriginal || ""),
         capsuleCrop: safeClone(data?.capsuleCrop, defaultRectCrop()),
@@ -1828,24 +1906,206 @@
       return { left: 33.3333, right: 66.6667 };
     }
 
+    function defaultCapsuleConfig() {
+      return {
+        image: "",
+        imageOriginal: "",
+        crop: defaultRectCrop(),
+        stretch: defaultCapsuleStretch(),
+        stretchEditing: false,
+        imageLabel: "",
+        controls: {}
+      };
+    }
+
+    function normalizeCapsuleConfig(config) {
+      return {
+        image: String(config?.image || ""),
+        imageOriginal: String(config?.imageOriginal || ""),
+        crop: safeClone(config?.crop, defaultRectCrop()),
+        stretch: safeClone(config?.stretch, defaultCapsuleStretch()),
+        stretchEditing: Boolean(config?.stretchEditing),
+        imageLabel: String(config?.imageLabel || ""),
+        controls: config?.controls && typeof config.controls === "object" ? { ...config.controls } : {}
+      };
+    }
+
+    const globalCapsuleConfig = {
+      get image() { return state.capsuleImage; },
+      set image(value) { state.capsuleImage = value; },
+      get imageOriginal() { return state.capsuleImageOriginal; },
+      set imageOriginal(value) { state.capsuleImageOriginal = value; },
+      get crop() { return state.capsuleCrop; },
+      set crop(value) { state.capsuleCrop = value; },
+      get stretch() { return state.capsuleStretch; },
+      set stretch(value) { state.capsuleStretch = value; },
+      get stretchEditing() { return state.capsuleStretchEditing; },
+      set stretchEditing(value) { state.capsuleStretchEditing = value; },
+      get imageLabel() { return state.capsuleImageLabel; },
+      set imageLabel(value) { state.capsuleImageLabel = value; },
+      get controls() { return getGlobalCapsuleStyleControls(); },
+      set controls(value) { state.globalCapsuleStyleControls = { ...(value || {}) }; }
+    };
+
+    function ensureRoleCapsuleConfig(role) {
+      if (!role) return null;
+      if (!role.capsule || typeof role.capsule !== "object") {
+        role.capsule = defaultCapsuleConfig();
+      }
+      role.capsule.image = String(role.capsule.image || "");
+      role.capsule.imageOriginal = String(role.capsule.imageOriginal || "");
+      role.capsule.crop = safeClone(role.capsule.crop, defaultRectCrop());
+      role.capsule.stretch = safeClone(role.capsule.stretch, defaultCapsuleStretch());
+      role.capsule.stretchEditing = Boolean(role.capsule.stretchEditing);
+      role.capsule.imageLabel = String(role.capsule.imageLabel || "");
+      role.capsule.controls = role.capsule.controls && typeof role.capsule.controls === "object"
+        ? { ...role.capsule.controls }
+        : {};
+      return role.capsule;
+    }
+
+    function hasCustomCapsuleImage(capsule) {
+      return Boolean(capsule?.image || capsule?.imageOriginal);
+    }
+
+    function getGlobalCapsuleConfig() {
+      return globalCapsuleConfig;
+    }
+
+    function getEditingCapsuleRole() {
+      if (!state.singleRoleCapsuleMode) return null;
+      return roleById(state.singleRoleCapsuleTarget) || state.roles[0] || null;
+    }
+
+    function getEditingCapsuleConfig() {
+      const role = getEditingCapsuleRole();
+      return role ? ensureRoleCapsuleConfig(role) : getGlobalCapsuleConfig();
+    }
+
+    function isEditingCapsuleConfig(capsule) {
+      return capsule && getEditingCapsuleConfig() === capsule;
+    }
+
+    function getCapsuleConfigForRole(role) {
+      if (!state.singleRoleCapsuleMode || !role) return getGlobalCapsuleConfig();
+      const roleCapsule = ensureRoleCapsuleConfig(role);
+      return hasCustomCapsuleImage(roleCapsule) ? roleCapsule : getGlobalCapsuleConfig();
+    }
+
+    function resetCapsuleConfig(capsule) {
+      if (!capsule) return;
+      capsule.image = "";
+      capsule.imageOriginal = "";
+      capsule.crop = defaultRectCrop();
+      capsule.stretch = defaultCapsuleStretch();
+      capsule.stretchEditing = false;
+      capsule.imageLabel = "";
+      capsule.controls = {};
+    }
+
+    function captureCapsuleStyleControls() {
+      return capsuleStyleControlIds.reduce((result, id) => {
+        const node = $(id);
+        if (node) result[id] = readControlValue(node);
+        return result;
+      }, {});
+    }
+
+    function applyCapsuleStyleControls(values = {}) {
+      capsuleStyleControlIds.forEach((id) => {
+        const node = $(id);
+        if (node && Object.prototype.hasOwnProperty.call(values, id)) {
+          writeControlValue(node, values[id]);
+        }
+      });
+    }
+
+    function getCapsuleStyleOverrides(values = {}, baseValues = {}) {
+      return capsuleStyleControlIds.reduce((result, id) => {
+        if (!Object.prototype.hasOwnProperty.call(values, id)) return result;
+        const value = values[id];
+        const baseValue = baseValues[id];
+        if (String(value ?? "") !== String(baseValue ?? "")) {
+          result[id] = value;
+        }
+        return result;
+      }, {});
+    }
+
+    function getGlobalCapsuleStyleControls() {
+      if (!state.globalCapsuleStyleControls) {
+        state.globalCapsuleStyleControls = captureCapsuleStyleControls();
+      }
+      return { ...state.globalCapsuleStyleControls };
+    }
+
+    function saveCurrentCapsuleStyleControls() {
+      if (state.singleRoleCapsuleMode) {
+        const capsule = getEditingCapsuleConfig();
+        capsule.controls = getCapsuleStyleOverrides(captureCapsuleStyleControls(), getGlobalCapsuleStyleControls());
+      } else {
+        state.globalCapsuleStyleControls = captureCapsuleStyleControls();
+      }
+    }
+
+    function getVisibleCapsuleStyleControls() {
+      if (!state.singleRoleCapsuleMode) return getGlobalCapsuleStyleControls();
+      return {
+        ...getGlobalCapsuleStyleControls(),
+        ...(getEditingCapsuleConfig().controls || {})
+      };
+    }
+
+    function loadCapsuleStyleControlsForCurrentTarget() {
+      applyCapsuleStyleControls(getVisibleCapsuleStyleControls());
+    }
+
     function addRole(name = "角色", avatar = "", avatarInput = "") {
-      state.roles.push({ id: uid(), name, avatar, avatarOriginal: avatar, avatarInput, crop: defaultCrop(), fileLabel: "" });
+      state.roles.push({ id: uid(), name, avatar, avatarOriginal: avatar, avatarInput, crop: defaultCrop(), fileLabel: "", capsule: defaultCapsuleConfig() });
       renderEditors();
       draw();
     }
 
+    function createSkill(roleId = "", text = "") {
+      const resolvedRoleId = roleId || state.roles[0]?.id || "";
+      return {
+        id: uid(),
+        roleId: resolvedRoleId,
+        text,
+        richText: plainTextToRichHtml(text),
+        forceBreakBefore: false,
+        hideAvatar: false,
+        hideBackground: false,
+        directBreak: false,
+        transparentWidth: null
+      };
+    }
+
     function addSkill(roleId = "", text = "") {
-      state.skills.push({ id: uid(), roleId, text, richText: plainTextToRichHtml(text), forceBreakBefore: false });
+      state.skills.push(createSkill(roleId, text));
       renderEditors();
       draw();
     }
 
     function insertSkillAt(index, roleId = "", text = "") {
-      const skill = { id: uid(), roleId, text, richText: plainTextToRichHtml(text), forceBreakBefore: false };
+      const skill = createSkill(roleId, text);
       const insertIndex = Math.max(0, Math.min(Number(index) || 0, state.skills.length));
       state.skills.splice(insertIndex, 0, skill);
       renderEditors();
       draw();
+    }
+
+    function isSkillDirectBreak(skill) {
+      return Boolean(skill?.directBreak || skill?.forceBreakBefore);
+    }
+
+    function hasSkillOptionActive(skill) {
+      return Boolean(skill?.hideAvatar || skill?.hideBackground || isSkillDirectBreak(skill));
+    }
+
+    function getSkillTransparentWidth(skill) {
+      const value = Number(skill?.transparentWidth);
+      return Number.isFinite(value) && value > 0 ? value : null;
     }
 
     function roleById(id) {
@@ -1861,7 +2121,51 @@
     function updateCapsuleFileLabelUI() {
       const node = $("capsuleFileName");
       if (!node) return;
-      node.textContent = state.capsuleImageLabel || (state.capsuleImageOriginal ? "已载入图片" : "未选择文件");
+      const capsule = getEditingCapsuleConfig();
+      node.textContent = capsule.imageLabel || (capsule.imageOriginal ? "已载入图片" : "未选择文件");
+    }
+
+    function syncSingleRoleCapsuleTarget() {
+      const validRoleIds = new Set(state.roles.map((role) => role.id));
+      if (!validRoleIds.has(state.singleRoleCapsuleTarget)) {
+        state.singleRoleCapsuleTarget = state.roles[0]?.id || "";
+      }
+    }
+
+    function renderSingleRoleCapsuleControls() {
+      const checkbox = $("singleRoleCapsuleMode");
+      const select = $("singleRoleCapsuleTarget");
+      if (!checkbox || !select) return;
+      syncSingleRoleCapsuleTarget();
+      checkbox.checked = Boolean(state.singleRoleCapsuleMode);
+      select.style.display = state.singleRoleCapsuleMode ? "" : "none";
+      select.disabled = !state.roles.length;
+      select.innerHTML = state.roles.map((role) => `<option value="${role.id}">${escapeHtml(role.name || "未命名角色")}</option>`).join("");
+      select.value = state.singleRoleCapsuleTarget;
+      updateCapsuleFileLabelUI();
+    }
+
+    function refreshCapsuleEditingUI() {
+      renderSingleRoleCapsuleControls();
+      loadCapsuleStyleControlsForCurrentTarget();
+      renderCapsuleCropEditor();
+      updateCapsuleFileLabelUI();
+    }
+
+    function switchSingleRoleCapsuleMode(enabled) {
+      saveCurrentCapsuleStyleControls();
+      state.singleRoleCapsuleMode = Boolean(enabled);
+      syncSingleRoleCapsuleTarget();
+      refreshCapsuleEditingUI();
+      draw();
+    }
+
+    function switchSingleRoleCapsuleTarget(roleId) {
+      saveCurrentCapsuleStyleControls();
+      state.singleRoleCapsuleTarget = roleId;
+      syncSingleRoleCapsuleTarget();
+      refreshCapsuleEditingUI();
+      draw();
     }
 
     function cloneRole(role) {
@@ -1872,18 +2176,26 @@
         avatarOriginal: String(role?.avatarOriginal || ""),
         avatarInput: String(role?.avatarInput || ""),
         crop: safeClone(role?.crop, defaultCrop()),
-        fileLabel: String(role?.fileLabel || "")
+        fileLabel: String(role?.fileLabel || ""),
+        capsule: normalizeCapsuleConfig(role?.capsule)
       };
     }
 
     function cloneSkill(skill) {
       const richText = sanitizeSkillRichText(skill?.richText || plainTextToRichHtml(skill?.text || ""));
+      const directBreak = Boolean(skill?.directBreak || skill?.forceBreakBefore);
       return {
         id: String(skill?.id || uid()),
         roleId: String(skill?.roleId || ""),
         text: htmlToPlainText(richText),
         richText,
-        forceBreakBefore: Boolean(skill?.forceBreakBefore)
+        forceBreakBefore: directBreak,
+        hideAvatar: Boolean(skill?.hideAvatar),
+        hideBackground: Boolean(skill?.hideBackground),
+        directBreak,
+        transparentWidth: Number.isFinite(Number(skill?.transparentWidth)) && Number(skill?.transparentWidth) > 0
+          ? Number(skill.transparentWidth)
+          : null
       };
     }
 
@@ -1895,16 +2207,30 @@
       }, {});
     }
 
+    function getSnapshotControlValues() {
+      const values = captureControlValues();
+      const globalCapsuleValues = getGlobalCapsuleStyleControls();
+      capsuleStyleControlIds.forEach((id) => {
+        if (Object.prototype.hasOwnProperty.call(globalCapsuleValues, id)) {
+          values[id] = globalCapsuleValues[id];
+        }
+      });
+      return values;
+    }
+
     function getCurrentPresetSnapshot(name) {
+      saveCurrentCapsuleStyleControls();
       return {
         id: uid(),
         version: 1,
         name,
         savedAt: new Date().toISOString(),
         layoutMode: state.layoutMode,
-        controls: captureControlValues(),
+        controls: getSnapshotControlValues(),
         roles: state.roles.map(cloneRole),
         skills: state.skills.map(cloneSkill),
+        singleRoleCapsuleMode: Boolean(state.singleRoleCapsuleMode),
+        singleRoleCapsuleTarget: String(state.singleRoleCapsuleTarget || ""),
         capsuleImage: String(state.capsuleImage || ""),
         capsuleImageOriginal: String(state.capsuleImageOriginal || ""),
         capsuleCrop: safeClone(state.capsuleCrop, defaultRectCrop()),
@@ -1946,35 +2272,55 @@
       const nextRoles = Array.isArray(preset.roles) ? preset.roles.map(cloneRole) : [];
       const validRoleIds = new Set(nextRoles.map((role) => role.id));
       const nextSkills = Array.isArray(preset.skills)
-        ? preset.skills.map(cloneSkill).map((skill) => ({
-            ...skill,
-            roleId: validRoleIds.has(skill.roleId) ? skill.roleId : ""
-          }))
+        ? preset.skills.map(cloneSkill).map((skill) => {
+            if (validRoleIds.has(skill.roleId)) return skill;
+            return {
+              ...skill,
+              roleId: nextRoles[0]?.id || "",
+              hideAvatar: Boolean(nextRoles.length) || skill.hideAvatar
+            };
+          })
         : [];
 
       state.roles = nextRoles;
       state.skills = nextSkills;
+      state.singleRoleCapsuleMode = Boolean(preset.singleRoleCapsuleMode);
+      state.singleRoleCapsuleTarget = validRoleIds.has(preset.singleRoleCapsuleTarget) ? preset.singleRoleCapsuleTarget : (nextRoles[0]?.id || "");
       state.capsuleImage = String(preset.capsuleImage || "");
       state.capsuleImageOriginal = String(preset.capsuleImageOriginal || "");
       state.capsuleCrop = safeClone(preset.capsuleCrop, defaultRectCrop());
       state.capsuleStretch = safeClone(preset.capsuleStretch, defaultCapsuleStretch());
       state.capsuleStretchEditing = false;
       state.capsuleImageLabel = String(preset.capsuleImageLabel || "");
+      state.globalCapsuleStyleControls = null;
 
       const values = preset.controls && typeof preset.controls === "object" ? preset.controls : {};
       Object.entries(values).forEach(([id, value]) => {
         const node = $(id);
         if (node) writeControlValue(node, value);
       });
+      state.globalCapsuleStyleControls = captureCapsuleStyleControls();
 
       setLayoutMode(String(preset.layoutMode || values.layoutMode || "vertical"), { preserveSmallCanvas: true });
       renderEditors();
+      loadCapsuleStyleControlsForCurrentTarget();
       draw();
+    }
+
+    function loadBuiltinDefaultPreset() {
+      if (!window.builtinDefaultPreset || typeof window.builtinDefaultPreset !== "object") return false;
+
+      const preset = normalizePresetSnapshot(window.builtinDefaultPreset, "大病");
+      applyPresetSnapshot(preset);
+      $("presetName").value = preset.name || "大病";
+      setPresetStatus(`已载入默认预设：${preset.name || "大病"}`);
+      return true;
     }
 
     function renderEditors() {
       renderRoles();
       renderSkills();
+      renderSingleRoleCapsuleControls();
       renderCapsuleCropEditor();
       updateCapsuleFileLabelUI();
       scheduleCropOverlaySync();
@@ -2007,7 +2353,6 @@
             <div>
               <label>角色</label>
               <select data-field="skill-role">
-                <option value="">无头像</option>
                 ${roleOptions}
               </select>
             </div>
@@ -2063,10 +2408,6 @@
                 <input id="role-file-${role.id}" data-field="role-file" type="file" accept="image/*">
               </div>
             </div>
-            <div class="full">
-              <label>头像 URL</label>
-              <input data-field="role-avatar-source" placeholder="https://..." value="${escapeAttr(role.avatarInput || "")}">
-            </div>
           </div>
           ${role.avatarOriginal ? `
             <div class="crop-shell is-avatar-crop">
@@ -2103,14 +2444,13 @@
 
       const roleOptions = state.roles.map((role) => `<option value="${role.id}">${escapeHtml(role.name || "未命名角色")}</option>`).join("");
       list.innerHTML = state.skills.map((skill, index) => `
-        <article class="skill-card${skill.forceBreakBefore ? " is-line-break" : ""}" data-skill-id="${skill.id}">
+        <article class="skill-card${isSkillDirectBreak(skill) ? " is-line-break" : ""}${skill.hideBackground ? " is-transparent-bg" : ""}${hasSkillOptionActive(skill) ? " is-option-active" : ""}" data-skill-id="${skill.id}">
           <div class="skill-head">
             <div class="skill-title">
               <strong>${index + 1}</strong>
             </div>
             <div class="actions">
               <button class="danger" data-action="delete-skill">删除</button>
-              <button class="soft" data-action="toggle-skill-break">${skill.forceBreakBefore ? "取消" : "换行"}</button>
               <button class="soft" data-action="add-skill-after">+添加</button>
             </div>
           </div>
@@ -2119,13 +2459,23 @@
             <div class="skill-role-field">
               <label>角色</label>
               <select data-field="skill-role">
-                <option value="">无头像</option>
                 ${roleOptions}
               </select>
             </div>
+            ${skill.hideBackground ? `
+              <div class="skill-width-field">
+                <label>宽度</label>
+                <input type="number" min="1" step="1" data-field="skill-transparent-width" value="${skill.transparentWidth ? Math.round(skill.transparentWidth) : ""}">
+              </div>
+            ` : ""}
             <div class="skill-editor-wrap">
               <label>技能内容</label>
               <div class="skill-editor" contenteditable="true" spellcheck="false" data-field="skill-richtext" data-placeholder="例如：开大 / AAER / 共鸣技能">${getSkillRichHtml(skill)}</div>
+            </div>
+            <div class="skill-options-row">
+              <label class="skill-option-toggle">隐藏头像<input type="checkbox" data-field="skill-hide-avatar"${skill.hideAvatar ? " checked" : ""}></label>
+              <label class="skill-option-toggle">底图透明<input type="checkbox" data-field="skill-hide-background"${skill.hideBackground ? " checked" : ""}></label>
+              <label class="skill-option-toggle">直接换行<input type="checkbox" data-field="skill-direct-break"${isSkillDirectBreak(skill) ? " checked" : ""}></label>
             </div>
           </div>
         </article>
@@ -2133,7 +2483,8 @@
 
       state.skills.forEach((skill) => {
         const card = list.querySelector(`[data-skill-id="${skill.id}"]`);
-        if (card) card.querySelector('[data-field="skill-role"]').value = skill.roleId;
+        const roleSelect = card?.querySelector('[data-field="skill-role"]');
+        if (roleSelect && roleById(skill.roleId)) roleSelect.value = skill.roleId;
       });
     }
 
@@ -2158,7 +2509,7 @@
     function renderSkillIconHtml(iconId) {
       const icon = skillIconMap[String(iconId || "")];
       if (!icon) return "";
-      return `<img class="skill-inline-icon" data-skill-icon="${escapeAttr(icon.id)}" src="${escapeAttr(icon.src)}" alt="${escapeAttr(icon.label)}" contenteditable="false">`;
+      return `<span class="skill-inline-icon" data-skill-icon="${escapeAttr(icon.id)}" contenteditable="false" title="${escapeAttr(icon.label)}"><img src="${escapeAttr(icon.src)}" alt="${escapeAttr(icon.label)}"></span>`;
     }
 
     function getSkillIconMetrics(settings = {}) {
@@ -2177,13 +2528,17 @@
 
       function walk(node) {
         if (node.nodeType === Node.TEXT_NODE) {
-          return escapeHtml((node.textContent || "").replace(/\u00a0/g, " "));
+          return escapeHtml((node.textContent || "").replace(/\u200b/g, "").replace(/\u00a0/g, " "));
         }
         if (node.nodeType !== Node.ELEMENT_NODE) return "";
 
         const tag = node.tagName.toLowerCase();
         if (tag === "br") return "<br>";
         if (tag === "img") {
+          const iconId = String(node.getAttribute("data-skill-icon") || "").trim();
+          return renderSkillIconHtml(iconId);
+        }
+        if (node.hasAttribute("data-skill-icon")) {
           const iconId = String(node.getAttribute("data-skill-icon") || "").trim();
           return renderSkillIconHtml(iconId);
         }
@@ -2213,48 +2568,6 @@
       return sanitizeSkillRichText(skill?.richText || plainTextToRichHtml(skill?.text || ""));
     }
 
-    function renderGlobalSkillWorkspace() {
-      const workspace = $("globalSkillWorkspace");
-      if (!workspace) return;
-      const formatButtons = [
-        { action: "format-italic", label: "I", title: "斜体" },
-        { action: "format-underline", label: "U", title: "下划线" },
-        { action: "format-strike", label: "S", title: "删除线" },
-        { action: "format-superscript", label: "Sup", title: "上角标" },
-        { action: "format-subscript", label: "Sub", title: "下角标" }
-      ];
-      const index = state.skills.findIndex((item) => item.id === activeSkillWorkspaceId);
-      workspace.classList.toggle("is-open", skillWorkspaceOpen);
-      workspace.style.left = `${Math.round(skillWorkspacePosition.x)}px`;
-      workspace.style.top = `${Math.round(skillWorkspacePosition.y)}px`;
-
-      workspace.innerHTML = `
-        <div class="global-skill-workspace__panel">
-          <div class="global-skill-workspace__header" data-workspace-drag>
-            <div class="global-skill-workspace__title">
-              <strong>鍥炬枃宸ヤ綔鍖?/strong>
-              <span>${index >= 0 ? `褰撳墠锛?${index + 1} 鍙峰嵃鍥?` : "鍏堢偣閫夊乏渚т竴涓妧鑳藉唴瀹?"}</span>
-            </div>
-            <span class="global-skill-workspace__drag">鎷栧姩</span>
-          </div>
-            <div class="skill-workspace-block">
-              <p class="skill-workspace-label">文字格式</p>
-              <div class="skill-format-bar">
-                ${formatButtons.map((button) => `<button type="button" class="skill-format-btn skill-tool-btn" data-action="${button.action}" title="${button.title}">${button.label}</button>`).join("")}
-              </div>
-            </div>
-            <div class="skill-workspace-block">
-              <p class="skill-workspace-label">按键图标</p>
-              <div class="skill-icon-grid">
-                ${skillIconCatalog.map((icon) => `<button type="button" class="skill-icon-btn skill-tool-btn" data-action="insert-skill-icon" data-icon-id="${icon.id}" title="${icon.label}"><img src="${escapeAttr(icon.src)}" alt="${escapeAttr(icon.label)}"></button>`).join("")}
-              </div>
-            </div>
-          </div>
-          <button type="button" class="skill-workspace-fab skill-tool-btn" data-action="toggle-workspace" aria-label="展开工作区">+</button>
-        </div>
-      `;
-    }
-
     function richHtmlToTokens(html) {
       const template = document.createElement("template");
       template.innerHTML = sanitizeSkillRichText(html);
@@ -2274,7 +2587,7 @@
           tokens.push({ newline: true });
           return;
         }
-        if (tag === "img") {
+        if (tag === "img" || node.hasAttribute("data-skill-icon")) {
           const iconId = String(node.getAttribute("data-skill-icon") || "").trim();
           const icon = skillIconMap[iconId];
           if (icon) tokens.push({ iconId, iconLabel: icon.label, style: { ...style } });
@@ -2606,17 +2919,18 @@
     function renderCapsuleCropEditor() {
       const host = $("capsuleCropEditor");
       if (!host) return;
-      if (!state.capsuleImageOriginal) {
+      const capsule = getEditingCapsuleConfig();
+      if (!capsule.imageOriginal) {
         host.innerHTML = "";
         return;
       }
 
-      const crop = state.capsuleCrop || defaultRectCrop();
+      const crop = capsule.crop || defaultRectCrop();
       host.innerHTML = `
-        <div class="crop-shell is-capsule-crop${state.capsuleStretchEditing ? " is-stretch-editing" : ""}">
+        <div class="crop-shell is-capsule-crop${capsule.stretchEditing ? " is-stretch-editing" : ""}">
           <div class="crop-top">
             <div class="crop-stage" data-field="capsule-crop-stage">
-              <img class="crop-source" data-field="capsule-crop-source" src="${escapeAttr(state.capsuleImageOriginal)}" alt="">
+              <img class="crop-source" data-field="capsule-crop-source" src="${escapeAttr(capsule.imageOriginal)}" alt="">
               <div class="crop-box" data-field="capsule-crop-box">
                 <div class="crop-handle" data-handle="nw"></div>
                 <div class="crop-handle" data-handle="ne"></div>
@@ -2631,7 +2945,7 @@
             </div>
           </div>
           <div class="crop-controls">
-            <p class="hint crop-meta">${state.capsuleStretchEditing ? "拖动两条竖线选择可拉伸单元；裁剪框会暂时锁定，完成后再继续裁剪。" : "直接拖动裁剪框，或者拉动四角调整范围。下面的宽高百分比也可以直接输入。"}</p>
+            <p class="hint crop-meta">${capsule.stretchEditing ? "拖动两条竖线选择可拉伸单元；裁剪框会暂时锁定，完成后再继续裁剪。" : "直接拖动裁剪框，或者拉动四角调整范围。下面的宽高百分比也可以直接输入。"}</p>
             <div class="crop-meta-inputs">
               <input type="number" min="6" max="100" step="1" data-field="capsule-crop-w" value="${Math.round(crop.w ?? 80)}">
               <span>%</span>
@@ -2641,7 +2955,7 @@
             <div class="actions">
               <button type="button" data-action="center-capsule-crop">居中取景</button>
               <button type="button" data-action="reset-capsule-crop">重置裁剪</button>
-              <button type="button" data-action="toggle-capsule-stretch">${state.capsuleStretchEditing ? "完成" : "拉伸单元自定义"}</button>
+              <button type="button" data-action="toggle-capsule-stretch">${capsule.stretchEditing ? "完成" : "拉伸单元自定义"}</button>
             </div>
           </div>
         </div>
@@ -2652,7 +2966,8 @@
 
     function updateCapsuleCropUI() {
       const host = $("capsuleCropEditor");
-      if (!host || !state.capsuleImageOriginal) return;
+      const capsule = getEditingCapsuleConfig();
+      if (!host || !capsule.imageOriginal) return;
 
       const shell = host.querySelector(".crop-shell.is-capsule-crop");
       const cropBox = host.querySelector('[data-field="capsule-crop-box"]');
@@ -2681,11 +2996,11 @@
       const displayHeight = source.naturalHeight * scale;
       const offsetX = (stageWidth - displayWidth) / 2;
       const offsetY = (stageHeight - displayHeight) / 2;
-      const metrics = getRectCropMetrics(source.naturalWidth, source.naturalHeight, state.capsuleCrop);
-      state.capsuleCrop = metrics.crop;
-      state.capsuleStretch = normalizeCapsuleStretch(state.capsuleStretch || defaultCapsuleStretch());
+      const metrics = getRectCropMetrics(source.naturalWidth, source.naturalHeight, capsule.crop);
+      capsule.crop = metrics.crop;
+      capsule.stretch = normalizeCapsuleStretch(capsule.stretch || defaultCapsuleStretch());
 
-      if (shell) shell.classList.toggle("is-stretch-editing", Boolean(state.capsuleStretchEditing));
+      if (shell) shell.classList.toggle("is-stretch-editing", Boolean(capsule.stretchEditing));
       cropBox.style.display = "block";
       cropBox.style.left = `${offsetX + metrics.sx * scale}px`;
       cropBox.style.top = `${offsetY + metrics.sy * scale}px`;
@@ -2697,7 +3012,7 @@
         const cropTop = offsetY + metrics.sy * scale;
         const cropWidth = metrics.sourceWidth * scale;
         const cropHeight = metrics.sourceHeight * scale;
-        const stretch = state.capsuleStretch;
+        const stretch = capsule.stretch;
         const leftPx = cropWidth * (stretch.left / 100);
         const rightPx = cropWidth * (stretch.right / 100);
         stretchGuide.style.left = `${cropLeft}px`;
@@ -2714,12 +3029,12 @@
       if (heightInput) heightInput.value = String(Math.round(metrics.crop.h));
     }
 
-    function requestCapsuleCropUpdate() {
-      state._capsuleCropRevision = (state._capsuleCropRevision || 0) + 1;
-      const revision = state._capsuleCropRevision;
-      applyCapsuleCrop().then(() => {
-        if (state._capsuleCropRevision !== revision) return;
-        updateCapsuleCropUI();
+    function requestCapsuleCropUpdate(capsule = getEditingCapsuleConfig()) {
+      capsule._cropRevision = (capsule._cropRevision || 0) + 1;
+      const revision = capsule._cropRevision;
+      applyCapsuleCrop(capsule).then(() => {
+        if (capsule._cropRevision !== revision) return;
+        if (isEditingCapsuleConfig(capsule)) updateCapsuleCropUI();
         draw();
       });
     }
@@ -2773,6 +3088,7 @@
       const pointerX = getCapsuleStretchPointerPercent(clientX);
       if (pointerX == null) return;
       const startStretch = normalizeCapsuleStretch(activeCapsuleCropDrag.startStretch || defaultCapsuleStretch());
+      const capsule = activeCapsuleCropDrag.capsule || getEditingCapsuleConfig();
       let nextStretch = { ...startStretch };
 
       if (activeCapsuleCropDrag.mode === "stretch-left") {
@@ -2782,7 +3098,7 @@
         nextStretch.right = clamp(pointerX, startStretch.left, 100);
       }
 
-      state.capsuleStretch = normalizeCapsuleStretch(nextStretch);
+      capsule.stretch = normalizeCapsuleStretch(nextStretch);
       updateCapsuleCropUI();
       draw();
     }
@@ -2818,48 +3134,45 @@
         };
       }
 
-      state.capsuleCrop = normalizeRectCrop(nextCrop);
+      const capsule = activeCapsuleCropDrag.capsule || getEditingCapsuleConfig();
+      capsule.crop = normalizeRectCrop(nextCrop);
       updateCapsuleCropUI();
-      requestCapsuleCropUpdate();
+      requestCapsuleCropUpdate(capsule);
     }
 
-    async function setCapsuleImageSource(source, options = {}) {
+    async function setCapsuleImageSource(source, options = {}, capsule = getEditingCapsuleConfig()) {
       const next = String(source || "").trim();
-      state.capsuleImageOriginal = next;
+      capsule.imageOriginal = next;
       if (Object.prototype.hasOwnProperty.call(options, "fileLabel")) {
-        state.capsuleImageLabel = options.fileLabel;
+        capsule.imageLabel = options.fileLabel;
       }
       if (!next) {
-        state.capsuleImage = "";
-        state.capsuleCrop = defaultRectCrop();
-        state.capsuleStretch = defaultCapsuleStretch();
-        state.capsuleStretchEditing = false;
-        state.capsuleImageLabel = "";
-        renderCapsuleCropEditor();
+        resetCapsuleConfig(capsule);
+        if (isEditingCapsuleConfig(capsule)) renderCapsuleCropEditor();
         return;
       }
 
-      if (!state.capsuleCrop || options.resetCrop) {
-        state.capsuleCrop = defaultRectCrop();
+      if (!capsule.crop || options.resetCrop) {
+        capsule.crop = defaultRectCrop();
       }
-      if (!state.capsuleStretch || options.resetCrop) {
-        state.capsuleStretch = defaultCapsuleStretch();
+      if (!capsule.stretch || options.resetCrop) {
+        capsule.stretch = defaultCapsuleStretch();
       }
 
-      await applyCapsuleCrop();
-      renderCapsuleCropEditor();
+      await applyCapsuleCrop(capsule);
+      if (isEditingCapsuleConfig(capsule)) renderCapsuleCropEditor();
     }
 
-    async function applyCapsuleCrop() {
-      if (!state.capsuleImageOriginal) return;
-      const image = await loadImage(state.capsuleImageOriginal);
+    async function applyCapsuleCrop(capsule = getEditingCapsuleConfig()) {
+      if (!capsule.imageOriginal) return;
+      const image = await loadImage(capsule.imageOriginal);
       if (!image) {
-        state.capsuleImage = state.capsuleImageOriginal;
+        capsule.image = capsule.imageOriginal;
         return;
       }
 
-      const metrics = getRectCropMetrics(image.naturalWidth || image.width, image.naturalHeight || image.height, state.capsuleCrop);
-      state.capsuleCrop = metrics.crop;
+      const metrics = getRectCropMetrics(image.naturalWidth || image.width, image.naturalHeight || image.height, capsule.crop);
+      capsule.crop = metrics.crop;
 
       const outputWidth = 1200;
       const outputHeight = Math.max(120, Math.round(outputWidth * (metrics.sourceHeight / metrics.sourceWidth)));
@@ -2868,22 +3181,36 @@
       canvas.height = outputHeight;
       const ctx = canvas.getContext("2d");
       ctx.drawImage(image, metrics.sx, metrics.sy, metrics.sourceWidth, metrics.sourceHeight, 0, 0, outputWidth, outputHeight);
-      state.capsuleImage = canvas.toDataURL("image/png");
+      capsule.image = canvas.toDataURL("image/png");
+    }
+
+    function readCapsuleStyleSetting(id) {
+      if (state.singleRoleCapsuleMode) {
+        const values = getGlobalCapsuleStyleControls();
+        if (Object.prototype.hasOwnProperty.call(values, id)) {
+          const node = $(id);
+          return node?.type === "number" || node?.tagName === "INPUT" && node.type !== "color"
+            ? Number(values[id]) || 0
+            : values[id];
+        }
+      }
+      return id === "capsuleWidthMode" || id === "capsuleColor" ? $(id).value : readNumber(id);
     }
 
     function buildDrawSettings(overrides = {}) {
       return {
         mode: state.layoutMode,
         flowSizeLock: $("flowSizeLock")?.checked === true,
-        x: readNumber("capsuleX"),
-        y: readNumber("capsuleY"),
-        w: readNumber("capsuleWidth"),
-        h: readNumber("capsuleHeight"),
-        gap: readNumber("capsuleGap"),
-        gapX: readNumber("capsuleGapX"),
-        rightPad: readNumber("capsuleRightPad"),
-        widthMode: $("capsuleWidthMode").value,
-        color: $("capsuleColor").value,
+        layoutScale: 1,
+        x: readCapsuleStyleSetting("capsuleX"),
+        y: readCapsuleStyleSetting("capsuleY"),
+        w: readCapsuleStyleSetting("capsuleWidth"),
+        h: readCapsuleStyleSetting("capsuleHeight"),
+        gap: readCapsuleStyleSetting("capsuleGap"),
+        gapX: readCapsuleStyleSetting("capsuleGapX"),
+        rightPad: readCapsuleStyleSetting("capsuleRightPad"),
+        widthMode: readCapsuleStyleSetting("capsuleWidthMode"),
+        color: readCapsuleStyleSetting("capsuleColor"),
         avatar: readNumber("avatarSize"),
         avatarScale: Math.max(0.1, readNumber("avatarScale") / 100),
         avatarInset: readNumber("avatarInset"),
@@ -2909,49 +3236,53 @@
 
       skills.forEach((skill, index) => {
         const role = roleById(skill.roleId);
-        const hasAvatar = Boolean(role);
-        const capsuleWidth = getCapsuleWidth(ctx, skill, settings, avatarSize, hasAvatar);
-        let x = settings.x;
-        let y = cursorY;
+        const hasAvatar = Boolean(role) && !skill.hideAvatar;
+        const itemSettings = applyCapsuleRoleStyleOverrides(settings, role);
+        const capsuleWidth = getCapsuleWidth(ctx, skill, itemSettings, avatarSize, hasAvatar, role);
+        const offsetX = itemSettings.x - settings.x;
+        const offsetY = itemSettings.y - settings.y;
+        let x = itemSettings.x;
+        let y = cursorY + offsetY;
 
         if (settings.mode === "horizontal") {
-          x = cursorX;
-          y = cursorY;
+          x = cursorX + offsetX;
+          y = cursorY + offsetY;
         } else if (settings.mode === "flow") {
           const wrapRight = Math.max(settings.x + capsuleWidth, canvasWidth - settings.x);
           if (cursorX > settings.x && cursorX + capsuleWidth > wrapRight) {
             cursorX = settings.x;
-            cursorY += settings.h + settings.gap;
+            cursorY += itemSettings.h + itemSettings.gap;
           }
-          x = cursorX;
-          y = cursorY;
+          x = cursorX + offsetX;
+          y = cursorY + offsetY;
         } else {
-          x = settings.x;
-          y = cursorY;
+          x = itemSettings.x;
+          y = cursorY + offsetY;
         }
 
         maxRight = Math.max(maxRight, x + capsuleWidth);
-        maxBottom = Math.max(maxBottom, y + settings.h);
-        placements.push({ skill, role, hasAvatar, capsuleWidth, x, y });
+        maxBottom = Math.max(maxBottom, y + itemSettings.h);
+        placements.push({ skill, role, hasAvatar, capsuleWidth, x, y, itemSettings });
+        const shouldBreakAfter = isSkillDirectBreak(skill);
 
         if (settings.mode === "horizontal") {
-          if (skill.forceBreakBefore) {
+          if (shouldBreakAfter) {
             cursorX = settings.x;
-            cursorY += settings.h + settings.gap;
+            cursorY += itemSettings.h + itemSettings.gap;
           } else {
-            cursorX += capsuleWidth + settings.gapX;
+            cursorX += capsuleWidth + itemSettings.gapX;
           }
         } else if (settings.mode === "flow") {
-          if (skill.forceBreakBefore) {
+          if (shouldBreakAfter) {
             cursorX = settings.x;
-            cursorY += settings.h + settings.gap;
+            cursorY += itemSettings.h + itemSettings.gap;
           } else {
-            cursorX += capsuleWidth + settings.gapX;
+            cursorX += capsuleWidth + itemSettings.gapX;
           }
         } else {
-          cursorY += settings.h + settings.gap;
-          if (skill.forceBreakBefore) {
-            cursorY += settings.h + settings.gap;
+          cursorY += itemSettings.h + itemSettings.gap;
+          if (shouldBreakAfter) {
+            cursorY += itemSettings.h + itemSettings.gap;
           }
         }
       });
@@ -2968,6 +3299,7 @@
       const scale = Math.max(0.05, Number(factor) || 1);
       return {
         ...settings,
+        layoutScale: (settings.layoutScale || 1) * scale,
         x: settings.x * scale,
         y: settings.y * scale,
         w: settings.w * scale,
@@ -2982,6 +3314,12 @@
         noAvatarTextInset: settings.noAvatarTextInset * scale,
         fontSize: settings.fontSize * scale
       };
+    }
+
+    function getUnscaledCapsuleStyleValue(settings, id, value, fallback) {
+      const scale = settings.layoutScale || 1;
+      const baseFallback = scale ? fallback / scale : fallback;
+      return coerceCapsuleStyleControlValue(id, value, baseFallback);
     }
 
     function solveFlowLockedScale(ctx, settings, width, height) {
@@ -3004,13 +3342,49 @@
       return best;
     }
 
+    function coerceCapsuleStyleControlValue(id, value, fallback) {
+      if (value == null || value === "") return fallback;
+      if (id === "capsuleWidthMode" || id === "capsuleColor") return String(value);
+      const numeric = Number(value);
+      return Number.isFinite(numeric) ? numeric : fallback;
+    }
+
+    function scaledCapsuleStyleValue(settings, id, value, fallback) {
+      const scale = settings.layoutScale || 1;
+      return getUnscaledCapsuleStyleValue(settings, id, value, fallback) * scale;
+    }
+
+    function applyCapsuleRoleStyleOverrides(settings, role) {
+      if (!state.singleRoleCapsuleMode || !role) return settings;
+      const capsule = ensureRoleCapsuleConfig(role);
+      const controls = capsule?.controls || {};
+      if (!Object.keys(controls).length) return settings;
+      return {
+        ...settings,
+        x: scaledCapsuleStyleValue(settings, "capsuleX", controls.capsuleX, settings.x),
+        y: scaledCapsuleStyleValue(settings, "capsuleY", controls.capsuleY, settings.y),
+        w: scaledCapsuleStyleValue(settings, "capsuleWidth", controls.capsuleWidth, settings.w),
+        h: scaledCapsuleStyleValue(settings, "capsuleHeight", controls.capsuleHeight, settings.h),
+        gap: scaledCapsuleStyleValue(settings, "capsuleGap", controls.capsuleGap, settings.gap),
+        gapX: scaledCapsuleStyleValue(settings, "capsuleGapX", controls.capsuleGapX, settings.gapX),
+        rightPad: scaledCapsuleStyleValue(settings, "capsuleRightPad", controls.capsuleRightPad, settings.rightPad),
+        widthMode: coerceCapsuleStyleControlValue("capsuleWidthMode", controls.capsuleWidthMode, settings.widthMode),
+        color: coerceCapsuleStyleControlValue("capsuleColor", controls.capsuleColor, settings.color)
+      };
+    }
+
     async function drawSkillPlacement(ctx, placement, settings, capsuleImage, avatarSize) {
       const { skill, role, hasAvatar, capsuleWidth, x, y } = placement;
-      drawCapsuleBase(ctx, capsuleImage, x, y, capsuleWidth, settings.h, settings.color, state.capsuleStretch);
+      const itemSettings = placement.itemSettings || settings;
+      const capsule = getCapsuleConfigForRole(role);
+      const resolvedCapsuleImage = capsuleImage || await loadImage(capsule.image);
+      if (!skill.hideBackground) {
+        drawCapsuleBase(ctx, resolvedCapsuleImage, x, y, capsuleWidth, itemSettings.h, itemSettings.color, capsule.stretch);
+      }
 
-      const avatarX = x + settings.avatarInset;
-      const avatarY = y + (settings.h - avatarSize) / 2 + settings.avatarOffsetY;
-      const avatarImage = await loadImage(role?.avatar || "");
+      const avatarX = x + itemSettings.avatarInset;
+      const avatarY = y + (itemSettings.h - avatarSize) / 2 + itemSettings.avatarOffsetY;
+      const avatarImage = hasAvatar ? await loadImage(role?.avatar || "") : null;
 
       if (avatarImage) {
         ctx.save();
@@ -3019,20 +3393,20 @@
         ctx.clip();
         ctx.drawImage(avatarImage, avatarX, avatarY, avatarSize, avatarSize);
         ctx.restore();
-      } else if (role) {
+      } else if (hasAvatar && role) {
         ctx.save();
         ctx.fillStyle = "#dce8e9";
         ctx.beginPath();
         ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = "#2f3948";
-        ctx.font = `900 ${Math.max(18, avatarSize * .36)}px ${settings.fontFamily}`;
+        ctx.font = `900 ${Math.max(18, avatarSize * .36)}px ${itemSettings.fontFamily}`;
         ctx.textAlign = "center";
         ctx.fillText((role.name || "?").slice(0, 1), avatarX + avatarSize / 2, avatarY + avatarSize / 2 + 2);
         ctx.restore();
       }
 
-      if (role) {
+      if (hasAvatar) {
         ctx.save();
         ctx.strokeStyle = "#384244";
         ctx.lineWidth = Math.max(4, avatarSize * .07);
@@ -3043,14 +3417,20 @@
       }
 
       ctx.save();
-      ctx.fillStyle = settings.fontColor;
-      const textBounds = getCapsuleTextBounds(capsuleImage, x, capsuleWidth, settings.h, state.capsuleStretch);
+      ctx.fillStyle = itemSettings.fontColor;
+      const textBounds = getCapsuleTextBounds(resolvedCapsuleImage, x, capsuleWidth, itemSettings.h, capsule.stretch);
       const textLeftBound = textBounds.left;
       const textRightBound = textBounds.right;
-      const textInset = hasAvatar ? settings.textInset : settings.noAvatarTextInset;
+      const textInset = hasAvatar ? itemSettings.textInset : itemSettings.noAvatarTextInset;
       const textAnchorX = clamp(x + textInset, textLeftBound, textRightBound);
-      const textMaxWidth = getTextMaxWidth(textAnchorX, textLeftBound, textRightBound, settings.textAlign);
-      await fitText(ctx, getSkillRichHtml(skill), textAnchorX, y + settings.h / 2, textMaxWidth, settings.fontSize, settings.textAlign, settings);
+      let textMaxWidth = getTextMaxWidth(textAnchorX, textLeftBound, textRightBound, itemSettings.textAlign);
+      const drawTextSettings = skill.hideBackground
+        ? { ...itemSettings, disableTextScale: true }
+        : itemSettings;
+      if (skill.hideBackground) {
+        textMaxWidth = Math.max(textMaxWidth, Math.ceil(measureRichTextMaxLineWidth(ctx, getSkillRichHtml(skill), itemSettings)));
+      }
+      await fitText(ctx, getSkillRichHtml(skill), textAnchorX, y + itemSettings.h / 2, textMaxWidth, itemSettings.fontSize, itemSettings.textAlign, drawTextSettings);
       ctx.restore();
     }
 
@@ -3094,6 +3474,16 @@
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
+    function updateTransparentWidthInputs(placements) {
+      if (!Array.isArray(placements)) return;
+      placements.forEach((placement) => {
+        if (!placement.skill?.hideBackground) return;
+        const input = $("skillList").querySelector(`[data-skill-id="${placement.skill.id}"] [data-field="skill-transparent-width"]`);
+        if (!input || document.activeElement === input) return;
+        input.value = String(Math.max(1, Math.round(placement.capsuleWidth)));
+      });
+    }
+
     function createTimestampLabel() {
       const now = new Date();
       const pad = (value) => String(value).padStart(2, "0");
@@ -3101,8 +3491,9 @@
     }
 
     async function draw() {
+      const revision = ++drawRevision;
       const canvas = $("output");
-      const ctx = canvas.getContext("2d");
+      const outputCtx = canvas.getContext("2d");
       const width = Math.max(100, readNumber("canvasWidth"));
       const height = Math.max(100, readNumber("canvasHeight"));
       const scale = Number($("scale").value) || 1;
@@ -3112,22 +3503,30 @@
       canvas.style.width = `${Math.round(width * scale)}px`;
       canvas.style.height = `${Math.round(height * scale)}px`;
 
-      ctx.clearRect(0, 0, width, height);
+      const workCanvas = document.createElement("canvas");
+      workCanvas.width = width;
+      workCanvas.height = height;
+      const ctx = workCanvas.getContext("2d");
 
       let settings = buildDrawSettings();
       ctx.textBaseline = "middle";
       ctx.textAlign = "left";
-      const capsuleImage = await loadImage(state.capsuleImage);
       if (settings.mode === "flow" && settings.flowSizeLock) {
         const scaleFactor = solveFlowLockedScale(ctx, settings, width, height);
         settings = scaleLayoutSettings(settings, scaleFactor);
       }
       const { avatarSize, placements } = getSkillPlacements(ctx, settings, width);
+      if (revision !== drawRevision) return;
 
       for (const placement of placements) {
-        await drawSkillPlacement(ctx, placement, settings, capsuleImage, avatarSize);
+        await drawSkillPlacement(ctx, placement, settings, null, avatarSize);
+        if (revision !== drawRevision) return;
       }
 
+      if (revision !== drawRevision) return;
+      outputCtx.clearRect(0, 0, width, height);
+      outputCtx.drawImage(workCanvas, 0, 0);
+      updateTransparentWidthInputs(placements);
       updateCapsuleCropUI();
     }
 
@@ -3181,7 +3580,12 @@
       return maxWidth;
     }
 
-    function getCapsuleWidth(ctx, skill, settings, avatarSize, hasAvatar) {
+    function getCapsuleWidth(ctx, skill, settings, avatarSize, hasAvatar, role = null) {
+      if (skill?.hideBackground) {
+        const manualWidth = getSkillTransparentWidth(skill);
+        if (manualWidth != null) return manualWidth;
+      }
+
       if (!isHorizontalFamilyMode(settings.mode) || settings.widthMode === "fixed") {
         return settings.w;
       }
@@ -3196,8 +3600,9 @@
       const avatarReach = hasAvatar ? settings.avatarInset + avatarSize : 0;
       const contentRight = Math.max(avatarReach, textRight);
       const contentLeft = Math.max(16, Math.min(hasAvatar ? settings.avatarInset : 16, textLeft));
-      const minCapsuleWidth = state.capsuleImage
-        ? getCapsuleStretchMinWidth(settings.h, state.capsuleCrop, state.capsuleStretch)
+      const capsule = getCapsuleConfigForRole(role);
+      const minCapsuleWidth = capsule.image
+        ? getCapsuleStretchMinWidth(settings.h, capsule.crop, capsule.stretch)
         : settings.h + 24;
       const autoWidth = Math.ceil(Math.max(minCapsuleWidth, contentRight + settings.rightPad, contentLeft + textWidth + settings.rightPad));
       return autoWidth;
@@ -3214,7 +3619,7 @@
       if (!tokens.length) return;
 
       const safeMaxWidth = Math.max(20, maxWidth);
-      const preferredSingleLine = settings.mode === "flow" && settings.flowSizeLock === true;
+      const preferredSingleLine = settings.mode === "flow" && settings.flowSizeLock === true && settings.disableTextScale !== true;
       const iconMetrics = getSkillIconMetrics(settings);
       const lines = [];
       let currentLine = [];
@@ -3349,6 +3754,9 @@
     }
 
     function resetDemo() {
+      state.singleRoleCapsuleMode = false;
+      state.singleRoleCapsuleTarget = "";
+      state.globalCapsuleStyleControls = null;
       state.capsuleImage = "";
       state.capsuleImageOriginal = "";
       state.capsuleCrop = defaultRectCrop();
@@ -3356,14 +3764,14 @@
       state.capsuleStretchEditing = false;
       state.capsuleImageLabel = "";
       state.roles = [
-        { id: uid(), name: "维里奈", avatar: demoImages[0], avatarOriginal: demoImages[0], avatarInput: "", crop: defaultCrop() },
-        { id: uid(), name: "吟霖", avatar: demoImages[1], avatarOriginal: demoImages[1], avatarInput: "", crop: defaultCrop() }
+        { id: uid(), name: "维里奈", avatar: demoImages[0], avatarOriginal: demoImages[0], avatarInput: "", crop: defaultCrop(), capsule: defaultCapsuleConfig() },
+        { id: uid(), name: "吟霖", avatar: demoImages[1], avatarOriginal: demoImages[1], avatarInput: "", crop: defaultCrop(), capsule: defaultCapsuleConfig() }
       ];
       state.skills = [
-        { id: uid(), roleId: state.roles[0].id, text: "AAER" },
-        { id: uid(), roleId: "", text: "" },
-        { id: uid(), roleId: state.roles[1].id, text: "开大" },
-        { id: uid(), roleId: "", text: "开大" }
+        { id: uid(), roleId: state.roles[0].id, text: "AAER", richText: plainTextToRichHtml("AAER"), forceBreakBefore: false, hideAvatar: false, hideBackground: false, directBreak: false },
+        { id: uid(), roleId: state.roles[0].id, text: "", richText: "", forceBreakBefore: false, hideAvatar: true, hideBackground: false, directBreak: false },
+        { id: uid(), roleId: state.roles[1].id, text: "开大", richText: plainTextToRichHtml("开大"), forceBreakBefore: false, hideAvatar: false, hideBackground: false, directBreak: false },
+        { id: uid(), roleId: state.roles[1].id, text: "开大", richText: plainTextToRichHtml("开大"), forceBreakBefore: false, hideAvatar: true, hideBackground: false, directBreak: false }
       ];
       renderEditors();
       draw();
@@ -3392,7 +3800,6 @@
       const measureCtx = measureCanvas.getContext("2d");
       measureCtx.textBaseline = "middle";
       measureCtx.textAlign = "left";
-      const capsuleImage = await loadImage(state.capsuleImage);
       const avatarSize = Math.max(12, settings.avatar * settings.avatarScale);
       const folderName = `胶囊独立导出_${createTimestampLabel()}`;
 
@@ -3409,9 +3816,10 @@
       for (let index = 0; index < state.skills.length; index += 1) {
         const skill = state.skills[index];
         const role = roleById(skill.roleId);
-        const hasAvatar = Boolean(role);
-        const capsuleWidth = getCapsuleWidth(measureCtx, skill, settings, avatarSize, hasAvatar);
-        const bounds = getCapsuleExportBounds(settings, capsuleWidth, hasAvatar, avatarSize);
+        const hasAvatar = Boolean(role) && !skill.hideAvatar;
+        const itemSettings = applyCapsuleRoleStyleOverrides(settings, role);
+        const capsuleWidth = getCapsuleWidth(measureCtx, skill, itemSettings, avatarSize, hasAvatar, role);
+        const bounds = getCapsuleExportBounds(itemSettings, capsuleWidth, hasAvatar, avatarSize);
         const exportCanvas = document.createElement("canvas");
         exportCanvas.width = Math.max(1, bounds.width);
         exportCanvas.height = Math.max(1, bounds.height);
@@ -3425,8 +3833,9 @@
           hasAvatar,
           capsuleWidth,
           x: -bounds.left,
-          y: -bounds.top
-        }, settings, capsuleImage, avatarSize);
+          y: -bounds.top,
+          itemSettings
+        }, settings, null, avatarSize);
 
         const blob = await canvasToBlob(exportCanvas);
         const fileName = `${String(index + 1).padStart(2, "0")}.png`;
@@ -3611,47 +4020,6 @@
       requestAnimationFrame(applySkillWorkspacePosition);
     }
 
-    function renderGlobalSkillWorkspace() {
-      const workspace = $("globalSkillWorkspace");
-      if (!workspace) return;
-      const formatButtons = [
-        { action: "format-italic", label: "I", title: "斜体" },
-        { action: "format-underline", label: "U", title: "下划线" },
-        { action: "format-strike", label: "S", title: "删除线" },
-        { action: "format-superscript", label: "Sup", title: "上角标" },
-        { action: "format-subscript", label: "Sub", title: "下角标" }
-      ];
-      const index = state.skills.findIndex((item) => item.id === activeSkillWorkspaceId);
-      const activeCopy = index >= 0 ? `当前正在编辑第 ${index + 1} 个胶囊` : "先点选一个技能内容框";
-
-      workspace.classList.toggle("is-open", skillWorkspaceOpen);
-      workspace.innerHTML = `
-        <div class="global-skill-workspace__panel">
-          <div class="global-skill-workspace__header" data-workspace-drag>
-            <div class="global-skill-workspace__title">
-              <strong>图文工作区</strong>
-              <span>${escapeHtml(activeCopy)}</span>
-            </div>
-            <span class="global-skill-workspace__drag">拖动</span>
-          </div>
-          <div class="skill-workspace-block">
-            <p class="skill-workspace-label">文字格式</p>
-            <div class="skill-format-bar">
-              ${formatButtons.map((button) => `<button type="button" class="skill-format-btn skill-tool-btn" data-action="${button.action}" title="${button.title}">${button.label}</button>`).join("")}
-            </div>
-          </div>
-          <div class="skill-workspace-block">
-            <p class="skill-workspace-label">按键图标</p>
-            <div class="skill-icon-grid">
-              ${skillIconCatalog.map((icon) => `<button type="button" class="skill-icon-btn skill-tool-btn" data-action="insert-skill-icon" data-icon-id="${icon.id}" title="${escapeAttr(icon.label)}"><img src="${escapeAttr(icon.src)}" alt="${escapeAttr(icon.label)}"></button>`).join("")}
-            </div>
-          </div>
-        </div>
-        <button type="button" class="skill-workspace-fab skill-tool-btn" data-action="toggle-workspace" data-workspace-drag aria-label="展开工作区">+</button>
-      `;
-      requestAnimationFrame(applySkillWorkspacePosition);
-    }
-
     function placeCaretAtEditorEnd(editor) {
       if (!editor) return;
       const selection = window.getSelection();
@@ -3690,9 +4058,167 @@
 
     function syncSkillEditorState(skill, editor) {
       if (!skill || !editor) return;
-      skill.richText = editor.innerHTML;
+      const nextRichText = editor.innerHTML;
+      const contentChanged = nextRichText !== skill.richText;
+      skill.richText = nextRichText;
       skill.text = htmlToPlainText(skill.richText);
+      if (contentChanged && skill.hideBackground) skill.transparentWidth = null;
       saveSkillEditorSelection(editor);
+    }
+
+    function normalizeSkillEditorDom(skill, editor) {
+      if (!skill || !editor) return;
+      const sanitized = getSkillRichHtml({ richText: editor.innerHTML, text: skill.text });
+      if (sanitized === editor.innerHTML) return;
+      editor.innerHTML = sanitized;
+      skill.richText = sanitized;
+      skill.text = htmlToPlainText(sanitized);
+      placeCaretAtEditorEnd(editor);
+      saveSkillEditorSelection(editor);
+    }
+
+    function getAdjacentSkillIcon(range, direction) {
+      if (!range || !range.collapsed) return null;
+      const container = range.startContainer;
+      const offset = range.startOffset;
+      const editor = container.nodeType === Node.ELEMENT_NODE
+        ? container.closest?.('[data-field="skill-richtext"]')
+        : container.parentElement?.closest?.('[data-field="skill-richtext"]');
+      if (!editor) return null;
+
+      function isIconNode(node) {
+        return node?.nodeType === Node.ELEMENT_NODE && node.hasAttribute("data-skill-icon");
+      }
+
+      function boundaryNode(node, dir) {
+        let current = node;
+        while (current && !isIconNode(current) && current.nodeType === Node.ELEMENT_NODE && current.childNodes.length) {
+          current = dir < 0 ? current.lastChild : current.firstChild;
+        }
+        return current;
+      }
+
+      function siblingAcrossBoundary(node, dir) {
+        let current = node;
+        while (current && current !== editor) {
+          const sibling = dir < 0 ? current.previousSibling : current.nextSibling;
+          if (sibling) return boundaryNode(sibling, dir);
+          current = current.parentNode;
+        }
+        return null;
+      }
+
+      let candidate = null;
+      if (container.nodeType === Node.TEXT_NODE) {
+        const length = container.textContent.length;
+        const beforeText = container.textContent.slice(0, offset).replace(/\u200b/g, "");
+        const afterText = container.textContent.slice(offset).replace(/\u200b/g, "");
+        if (direction < 0 && beforeText.length === 0) candidate = siblingAcrossBoundary(container, -1);
+        if (direction > 0 && afterText.length === 0) candidate = siblingAcrossBoundary(container, 1);
+      } else if (container.nodeType === Node.ELEMENT_NODE) {
+        const child = container.childNodes[offset + (direction < 0 ? -1 : 0)];
+        candidate = child ? boundaryNode(child, direction) : siblingAcrossBoundary(container, direction);
+      }
+
+      while (candidate?.nodeType === Node.TEXT_NODE && candidate.textContent.replace(/\u200b/g, "") === "") {
+        candidate = siblingAcrossBoundary(candidate, direction);
+      }
+      if (isIconNode(candidate)) return candidate;
+      return candidate?.parentElement?.closest?.("[data-skill-icon]") || null;
+    }
+
+    function deleteAdjacentSkillIcon(editor, direction) {
+      const selection = window.getSelection();
+      if (!editor || !selection || !selection.rangeCount) return false;
+      const range = selection.getRangeAt(0);
+      if (!editor.contains(range.startContainer) || !editor.contains(range.endContainer)) return false;
+      const iconNode = getAdjacentSkillIcon(range, direction);
+      if (!iconNode) return false;
+      const nextRange = document.createRange();
+      if (direction < 0) {
+        nextRange.setStartBefore(iconNode);
+      } else {
+        nextRange.setStartAfter(iconNode);
+      }
+      nextRange.collapse(true);
+      const previousText = iconNode.previousSibling;
+      const nextText = iconNode.nextSibling;
+      iconNode.remove();
+      if (previousText?.nodeType === Node.TEXT_NODE && previousText.textContent.replace(/\u200b/g, "") === "") {
+        previousText.remove();
+      }
+      if (nextText?.nodeType === Node.TEXT_NODE) {
+        nextText.textContent = nextText.textContent.replace(/^\u200b+/, "");
+        if (!nextText.textContent) nextText.remove();
+      }
+      editor.normalize();
+      selection.removeAllRanges();
+      selection.addRange(nextRange);
+      return true;
+    }
+
+    function deleteSkillEditorSelection(editor) {
+      const selection = window.getSelection();
+      if (!editor || !selection || !selection.rangeCount) return false;
+      const range = selection.getRangeAt(0);
+      if (range.collapsed) return false;
+      if (!editor.contains(range.startContainer) || !editor.contains(range.endContainer)) return false;
+      range.deleteContents();
+      editor.normalize();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      return true;
+    }
+
+    function placeCaretAroundSkillIcon(editor, iconNode, after = true) {
+      if (!editor || !iconNode || !editor.contains(iconNode)) return;
+      const selection = window.getSelection();
+      const range = document.createRange();
+      if (after) {
+        let anchor = iconNode.nextSibling;
+        if (!anchor || anchor.nodeType !== Node.TEXT_NODE) {
+          anchor = document.createTextNode("\u200b");
+          iconNode.parentNode.insertBefore(anchor, iconNode.nextSibling);
+        } else if (!anchor.textContent.startsWith("\u200b")) {
+          anchor.textContent = `\u200b${anchor.textContent}`;
+        }
+        range.setStart(anchor, 1);
+      } else {
+        range.setStartBefore(iconNode);
+      }
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      saveSkillEditorSelection(editor);
+    }
+
+    function moveCaretAcrossAdjacentSkillIcon(editor, direction) {
+      const selection = window.getSelection();
+      if (!editor || !selection || !selection.rangeCount) return false;
+      const range = selection.getRangeAt(0);
+      if (!editor.contains(range.startContainer) || !editor.contains(range.endContainer)) return false;
+      const iconNode = getAdjacentSkillIcon(range, direction);
+      if (!iconNode) return false;
+      placeCaretAroundSkillIcon(editor, iconNode, direction > 0);
+      return true;
+    }
+
+    function normalizeRangeOutsideSkillIcon(editor, range) {
+      if (!editor || !range) return range;
+      const startElement = range.startContainer.nodeType === Node.ELEMENT_NODE
+        ? range.startContainer
+        : range.startContainer.parentElement;
+      const endElement = range.endContainer.nodeType === Node.ELEMENT_NODE
+        ? range.endContainer
+        : range.endContainer.parentElement;
+      const startIcon = startElement?.closest?.("[data-skill-icon]");
+      const endIcon = endElement?.closest?.("[data-skill-icon]");
+      const iconNode = startIcon && editor.contains(startIcon) ? startIcon : endIcon && editor.contains(endIcon) ? endIcon : null;
+      if (!iconNode) return range;
+      const nextRange = document.createRange();
+      nextRange.setStartAfter(iconNode);
+      nextRange.collapse(true);
+      return nextRange;
     }
 
     function insertSkillIconAtSelection(skill, editor, iconId) {
@@ -3701,14 +4227,16 @@
       restoreSkillEditorSelection(editor, skill.id);
       const selection = window.getSelection();
       if (!selection || !selection.rangeCount) return;
-      const range = selection.getRangeAt(0);
+      const range = normalizeRangeOutsideSkillIcon(editor, selection.getRangeAt(0));
       range.deleteContents();
       const template = document.createElement("template");
       template.innerHTML = iconHtml;
       const iconNode = template.content.firstChild;
       if (!iconNode) return;
       range.insertNode(iconNode);
-      range.setStartAfter(iconNode);
+      const anchor = document.createTextNode("\u200b");
+      iconNode.parentNode.insertBefore(anchor, iconNode.nextSibling);
+      range.setStart(anchor, 1);
       range.collapse(true);
       selection.removeAllRanges();
       selection.addRange(range);
@@ -3718,7 +4246,6 @@
     $("addRole").addEventListener("click", () => addRole(`角色${state.roles.length + 1}`, ""));
     $("addSkill").addEventListener("click", () => addSkill());
     $("fitCanvas").addEventListener("click", fitCanvasToContent);
-    $("resetDemo").addEventListener("click", resetDemo);
     $("exportCapsules").addEventListener("click", () => {
       exportCapsulesAsSeparateFiles().catch(() => {
         alert("胶囊导出失败：如果使用了网络图片，请换成本地上传图片后再试。");
@@ -3737,6 +4264,14 @@
     });
     $("loadFonts").addEventListener("click", () => loadLocalFonts(true));
 
+    $("singleRoleCapsuleMode").addEventListener("change", (event) => {
+      switchSingleRoleCapsuleMode(event.target.checked);
+    });
+
+    $("singleRoleCapsuleTarget").addEventListener("change", (event) => {
+      switchSingleRoleCapsuleTarget(event.target.value);
+    });
+
     const layoutModeProxy = document.createElement("input");
     layoutModeProxy.type = "hidden";
     layoutModeProxy.id = "layoutMode";
@@ -3753,9 +4288,11 @@
 
     controls.forEach((id) => {
       $(id).addEventListener("input", () => {
+        if (capsuleStyleControlIds.includes(id)) saveCurrentCapsuleStyleControls();
         draw();
       });
       $(id).addEventListener("change", () => {
+        if (capsuleStyleControlIds.includes(id)) saveCurrentCapsuleStyleControls();
         draw();
       });
     });
@@ -3763,9 +4300,10 @@
     $("capsuleFile").addEventListener("change", (event) => {
       const file = event.target.files?.[0];
       if (!file) return;
+      const capsule = getEditingCapsuleConfig();
       const reader = new FileReader();
       reader.onload = async () => {
-        await setCapsuleImageSource(reader.result, { resetCrop: true, fileLabel: file.name });
+        await setCapsuleImageSource(reader.result, { resetCrop: true, fileLabel: file.name }, capsule);
         updateCapsuleFileLabelUI();
         draw();
       };
@@ -3774,12 +4312,8 @@
     });
 
     $("clearCapsuleImage").addEventListener("click", () => {
-      state.capsuleImage = "";
-      state.capsuleImageOriginal = "";
-      state.capsuleCrop = defaultRectCrop();
-      state.capsuleStretch = defaultCapsuleStretch();
-      state.capsuleStretchEditing = false;
-      state.capsuleImageLabel = "";
+      const capsule = getEditingCapsuleConfig();
+      resetCapsuleConfig(capsule);
       $("capsuleFile").value = "";
       renderCapsuleCropEditor();
       updateCapsuleFileLabelUI();
@@ -3795,7 +4329,7 @@
       if (event.target.dataset.field === "role-name") {
         role.name = event.target.value;
         updateRoleNameUI(card, role);
-        draw();
+        renderSingleRoleCapsuleControls();
         event.stopImmediatePropagation();
         return;
       }
@@ -3817,16 +4351,6 @@
 
       if (event.target.dataset.field === "role-name") {
         role.name = event.target.value;
-        renderEditors();
-        draw();
-        event.stopImmediatePropagation();
-        return;
-      }
-
-      if (event.target.dataset.field === "role-avatar-source") {
-        await setRoleAvatarSource(role, event.target.value, { resetCrop: true, avatarInput: event.target.value, fileLabel: "" });
-        renderEditors();
-        draw();
         event.stopImmediatePropagation();
         return;
       }
@@ -3842,6 +4366,18 @@
       };
       reader.readAsDataURL(file);
       event.target.value = "";
+      event.stopImmediatePropagation();
+    }, true);
+
+    $("roleList").addEventListener("focusout", (event) => {
+      if (event.target.dataset.field !== "role-name") return;
+      const card = event.target.closest("[data-role-id]");
+      if (!card) return;
+      const role = roleById(card.dataset.roleId);
+      if (!role) return;
+      role.name = event.target.value;
+      renderEditors();
+      draw();
       event.stopImmediatePropagation();
     }, true);
 
@@ -3906,9 +4442,11 @@
 
       if (action !== "delete-role") return;
       state.roles = state.roles.filter((item) => item.id !== roleId);
+      const fallbackRoleId = state.roles[0]?.id || "";
       state.skills.forEach((skill) => {
-        if (skill.roleId === roleId) skill.roleId = "";
+        if (skill.roleId === roleId) skill.roleId = fallbackRoleId;
       });
+      syncSingleRoleCapsuleTarget();
       renderEditors();
       draw();
       event.stopImmediatePropagation();
@@ -3917,13 +4455,15 @@
     $("capsuleCropEditor").addEventListener("pointerdown", (event) => {
       const stage = event.target.closest('[data-field="capsule-crop-stage"]');
       if (!stage) return;
+      const capsule = getEditingCapsuleConfig();
       const stretchHandle = event.target.closest("[data-stretch-handle]");
-      const isStretchEditing = Boolean(state.capsuleStretchEditing);
+      const isStretchEditing = Boolean(capsule.stretchEditing);
       if (isStretchEditing && stretchHandle) {
         activeCapsuleCropDrag = {
           pointerId: event.pointerId,
           mode: String(stretchHandle.dataset.stretchHandle || "left") === "right" ? "stretch-right" : "stretch-left",
-          startStretch: normalizeCapsuleStretch(state.capsuleStretch || defaultCapsuleStretch())
+          startStretch: normalizeCapsuleStretch(capsule.stretch || defaultCapsuleStretch()),
+          capsule
         };
         stage.classList.add("is-dragging");
         if (stage.setPointerCapture) stage.setPointerCapture(event.pointerId);
@@ -3938,7 +4478,7 @@
       const handle = event.target.closest("[data-handle]");
       const cropBox = event.target.closest('[data-field="capsule-crop-box"]');
       const pointer = getCapsuleCropPointerPercent(event.clientX, event.clientY);
-      const startCrop = normalizeRectCrop(state.capsuleCrop || defaultRectCrop());
+      const startCrop = normalizeRectCrop(capsule.crop || defaultRectCrop());
 
       if (!pointer) return;
 
@@ -3947,17 +4487,19 @@
           pointerId: event.pointerId,
           mode: String(handle.dataset.handle || "se"),
           startPoint: pointer,
-          startCrop
+          startCrop,
+          capsule
         };
       } else if (cropBox) {
         activeCapsuleCropDrag = {
           pointerId: event.pointerId,
           mode: "move",
           startPoint: pointer,
-          startCrop
+          startCrop,
+          capsule
         };
       } else {
-        state.capsuleCrop = normalizeRectCrop({
+        capsule.crop = normalizeRectCrop({
           ...startCrop,
           x: pointer.x - startCrop.w / 2,
           y: pointer.y - startCrop.h / 2
@@ -3967,12 +4509,13 @@
           pointerId: event.pointerId,
           mode: "move",
           startPoint: pointer,
-          startCrop: { ...state.capsuleCrop }
+          startCrop: { ...capsule.crop },
+          capsule
         };
       }
       stage.classList.add("is-dragging");
       if (stage.setPointerCapture) stage.setPointerCapture(event.pointerId);
-      requestCapsuleCropUpdate();
+      requestCapsuleCropUpdate(capsule);
       event.preventDefault();
     }, true);
 
@@ -4005,32 +4548,34 @@
     $("capsuleCropEditor").addEventListener("input", (event) => {
       const field = event.target.dataset.field;
       if (field !== "capsule-crop-w" && field !== "capsule-crop-h") return;
+      const capsule = getEditingCapsuleConfig();
       const crop = normalizeRectCrop({
-        ...(state.capsuleCrop || defaultRectCrop()),
-        w: field === "capsule-crop-w" ? Number(event.target.value) : state.capsuleCrop?.w,
-        h: field === "capsule-crop-h" ? Number(event.target.value) : state.capsuleCrop?.h
+        ...(capsule.crop || defaultRectCrop()),
+        w: field === "capsule-crop-w" ? Number(event.target.value) : capsule.crop?.w,
+        h: field === "capsule-crop-h" ? Number(event.target.value) : capsule.crop?.h
       });
-      state.capsuleCrop = crop;
+      capsule.crop = crop;
       updateCapsuleCropUI();
-      requestCapsuleCropUpdate();
+      requestCapsuleCropUpdate(capsule);
     }, true);
 
     $("capsuleCropEditor").addEventListener("click", (event) => {
       const action = event.target.dataset.action;
+      const capsule = getEditingCapsuleConfig();
       if (action === "center-capsule-crop") {
-        const crop = normalizeRectCrop(state.capsuleCrop || defaultRectCrop());
-        state.capsuleCrop = { ...crop, x: (100 - crop.w) / 2, y: (100 - crop.h) / 2 };
+        const crop = normalizeRectCrop(capsule.crop || defaultRectCrop());
+        capsule.crop = { ...crop, x: (100 - crop.w) / 2, y: (100 - crop.h) / 2 };
         updateCapsuleCropUI();
-        requestCapsuleCropUpdate();
+        requestCapsuleCropUpdate(capsule);
       }
       if (action === "reset-capsule-crop") {
-        state.capsuleCrop = defaultRectCrop();
+        capsule.crop = defaultRectCrop();
         updateCapsuleCropUI();
-        requestCapsuleCropUpdate();
+        requestCapsuleCropUpdate(capsule);
       }
       if (action === "toggle-capsule-stretch") {
-        state.capsuleStretchEditing = !state.capsuleStretchEditing;
-        if (!state.capsuleStretch) state.capsuleStretch = defaultCapsuleStretch();
+        capsule.stretchEditing = !capsule.stretchEditing;
+        if (!capsule.stretch) capsule.stretch = defaultCapsuleStretch();
         renderCapsuleCropEditor();
         draw();
       }
@@ -4114,16 +4659,59 @@
       if (!card) return;
       const skill = state.skills.find((item) => item.id === card.dataset.skillId);
       if (!skill) return;
+      if (event.target.dataset.field === "skill-transparent-width") {
+        const width = Number(event.target.value);
+        skill.transparentWidth = Number.isFinite(width) && width > 0 ? width : null;
+        draw();
+        return;
+      }
       if (event.target.dataset.field === "skill-richtext") {
         syncSkillEditorState(skill, event.target);
+        return;
       }
       draw();
     });
 
     $("skillList").addEventListener("focusin", (event) => {
       if (event.target.dataset.field !== "skill-richtext") return;
-      setActiveSkillWorkspaceTarget(event.target.closest("[data-skill-id]")?.dataset.skillId || null);
+      const skillId = event.target.closest("[data-skill-id]")?.dataset.skillId || null;
+      setActiveSkillWorkspaceTarget(skillId);
+      const skill = getSkillById(skillId);
+      normalizeSkillEditorDom(skill, event.target);
       requestAnimationFrame(() => saveSkillEditorSelection(event.target));
+    });
+
+    $("skillList").addEventListener("mousedown", (event) => {
+      const iconNode = event.target.closest("[data-skill-icon]");
+      if (!iconNode) return;
+      const editor = iconNode.closest('[data-field="skill-richtext"]');
+      if (!editor) return;
+      const rect = iconNode.getBoundingClientRect();
+      placeCaretAroundSkillIcon(editor, iconNode, event.clientX >= rect.left + rect.width / 2);
+      event.preventDefault();
+    }, true);
+
+    $("skillList").addEventListener("keydown", (event) => {
+      if (event.target.dataset.field !== "skill-richtext") return;
+      if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+        const direction = event.key === "ArrowLeft" ? -1 : 1;
+        if (!moveCaretAcrossAdjacentSkillIcon(event.target, direction)) return;
+        event.preventDefault();
+        return;
+      }
+      if (event.key !== "Backspace" && event.key !== "Delete") return;
+      const card = event.target.closest("[data-skill-id]");
+      const skill = card ? state.skills.find((item) => item.id === card.dataset.skillId) : null;
+      if (!skill) return;
+      const direction = event.key === "Backspace" ? -1 : 1;
+      if (deleteSkillEditorSelection(event.target)) {
+        event.preventDefault();
+        syncSkillEditorState(skill, event.target);
+        return;
+      }
+      if (!deleteAdjacentSkillIcon(event.target, direction)) return;
+      event.preventDefault();
+      syncSkillEditorState(skill, event.target);
     });
 
     $("skillList").addEventListener("keyup", (event) => {
@@ -4142,6 +4730,18 @@
       const skill = state.skills.find((item) => item.id === card.dataset.skillId);
       if (!skill) return;
       if (event.target.dataset.field === "skill-role") skill.roleId = event.target.value;
+      if (event.target.dataset.field === "skill-hide-avatar") skill.hideAvatar = event.target.checked;
+      if (event.target.dataset.field === "skill-hide-background") {
+        skill.hideBackground = event.target.checked;
+        skill.transparentWidth = null;
+        renderEditors();
+        draw();
+        return;
+      }
+      if (event.target.dataset.field === "skill-direct-break") {
+        skill.directBreak = event.target.checked;
+        skill.forceBreakBefore = event.target.checked;
+      }
       draw();
     });
 
@@ -4152,8 +4752,10 @@
       const skill = state.skills.find((item) => item.id === card.dataset.skillId);
       if (!skill) return;
       const sanitized = getSkillRichHtml({ richText: event.target.innerHTML, text: skill.text });
+      const contentChanged = sanitized !== skill.richText;
       skill.richText = sanitized;
       skill.text = htmlToPlainText(sanitized);
+      if (contentChanged && skill.hideBackground) skill.transparentWidth = null;
       event.target.innerHTML = sanitized;
       saveSkillEditorSelection(event.target);
       draw();
@@ -4172,13 +4774,6 @@
 
       if (action === "add-skill-after") {
         insertSkillAt(index + 1);
-        return;
-      }
-
-      if (action === "toggle-skill-break") {
-        skill.forceBreakBefore = !skill.forceBreakBefore;
-        renderEditors();
-        draw();
         return;
       }
 
@@ -4261,13 +4856,11 @@
         restoreSkillEditorSelection(editor, skill.id);
         applySkillFormatCommand(command, editor);
         syncSkillEditorState(skill, editor);
-        draw();
         return;
       }
 
       if (action === "insert-skill-icon") {
         insertSkillIconAtSelection(skill, editor, actionNode.dataset.iconId);
-        draw();
       }
     });
 
@@ -4325,8 +4918,9 @@
     loadLocalFonts(false);
     ensurePresetStoreReady().then(() => {
       renderPresetOptions();
+      const loadedBuiltinPreset = loadBuiltinDefaultPreset();
+      if (!loadedBuiltinPreset) resetDemo();
     });
-    resetDemo();
   </script>
 </body>
 </html>
