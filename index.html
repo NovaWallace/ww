@@ -216,6 +216,17 @@
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
+    .grid .half-row {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .grid .half-row label {
+      white-space: nowrap;
+    }
+
     .full {
       grid-column: 1 / -1;
     }
@@ -675,6 +686,8 @@
     .crop-shell.is-avatar-crop .crop-stage {
       aspect-ratio: 16 / 9;
       min-height: 320px;
+      width: min(100%, 640px);
+      justify-self: center;
     }
 
     .crop-shell.is-avatar-crop .crop-controls {
@@ -1173,6 +1186,30 @@
       align-items: end;
     }
 
+    .capsule-bg-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .capsule-bg-actions .file-picker-button {
+      min-width: 160px;
+    }
+
+    .role-avatar-action {
+      display: grid;
+      justify-items: end;
+    }
+
+    .role-avatar-action label {
+      justify-self: stretch;
+    }
+
+    .role-avatar-action .file-picker-button {
+      min-width: 160px;
+    }
+
     .file-picker {
       display: grid;
       grid-template-columns: auto minmax(0, 1fr);
@@ -1211,6 +1248,138 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    .avatar-preset-panel {
+      position: fixed;
+      z-index: 80;
+      display: none;
+      width: min(760px, calc(100vw - 32px));
+      max-height: min(62vh, 560px);
+      overflow: auto;
+      padding: 14px;
+      border: 1px solid #c7ddf3;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .98);
+      box-shadow: 0 18px 42px rgba(38, 84, 132, .18);
+    }
+
+    .avatar-preset-panel.is-open {
+      display: block;
+    }
+
+    .avatar-preset-panel__head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 12px;
+    }
+
+    .avatar-preset-panel__title strong {
+      display: block;
+      font-size: 18px;
+      color: #0f3e68;
+      margin-bottom: 4px;
+    }
+
+    .avatar-preset-panel__title span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .avatar-preset-delete-toggle {
+      width: 34px;
+      height: 34px;
+      min-width: 0;
+      padding: 0;
+      border-radius: 8px;
+      border-color: #b7dbf8;
+      background: var(--accent-soft);
+      color: #2f7fbc;
+      font-size: 22px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .avatar-preset-panel.is-delete-mode .avatar-preset-delete-toggle {
+      border-color: #f1b8be;
+      background: #fff5f6;
+      color: var(--danger);
+    }
+
+    .avatar-preset-panel__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+      gap: 12px;
+    }
+
+    .avatar-preset-tile {
+      position: relative;
+      min-height: 124px;
+      padding: 10px;
+      border: 1px dashed #c9ddf1;
+      border-radius: 8px;
+      background: #fbfdff;
+      display: grid;
+      justify-items: center;
+      align-content: center;
+      gap: 8px;
+      color: #214c73;
+      text-align: center;
+    }
+
+    .avatar-preset-tile:hover {
+      border-color: #8fc4f2;
+      background: #f4faff;
+    }
+
+    .avatar-preset-tile img {
+      width: 78px;
+      height: 78px;
+      object-fit: cover;
+      border-radius: 14px;
+      border: 1px solid #d3e3f3;
+      background: #fff;
+    }
+
+    .avatar-preset-tile.capsule-preset-tile img {
+      width: 112px;
+      height: 48px;
+      border-radius: 8px;
+    }
+
+    .avatar-preset-tile span {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    .avatar-preset-tile.is-tool {
+      font-size: 42px;
+      color: #96a8b8;
+    }
+
+    .avatar-preset-delete {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 24px;
+      height: 24px;
+      min-width: 0;
+      padding: 0;
+      border-radius: 50%;
+      border-color: #f1b8be;
+      background: #fff;
+      color: var(--danger);
+      line-height: 1;
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .status-line {
@@ -1368,7 +1537,6 @@
           <div class="config-body">
             <div class="role-block-head">
               <h2>角色列表</h2>
-              <button class="soft" id="addRole">+添加</button>
             </div>
             <div id="roleList" class="role-list"></div>
             <p class="hint">头像可以上传本地图片，也可以填写图片 URL。本地上传最稳定，导出 PNG 不会受跨站限制影响。</p>
@@ -1410,8 +1578,8 @@
                   <label for="capsuleColor">胶囊颜色</label>
                   <input id="capsuleColor" type="color" value="#4b4b4b" class="color-input">
                 </div>
-                <div class="mode-only mode-horizontal grid-item">
-                  <label for="capsuleWidthMode">横版宽度模式</label>
+                <div class="grid-item">
+                  <label for="capsuleWidthMode">宽度模式</label>
                   <select id="capsuleWidthMode">
                     <option value="auto">跟随内容</option>
                     <option value="fixed">固定宽度</option>
@@ -1421,9 +1589,19 @@
                   <label for="capsuleGapX">横向间距 px</label>
                   <input id="capsuleGapX" type="number" min="0" value="28">
                 </div>
-                <div class="mode-only mode-horizontal grid-item">
-                  <label for="capsuleRightPad">横版右方空余 px</label>
+                <div class="grid-item">
+                  <label for="capsuleRightPad">右方空余 px</label>
                   <input id="capsuleRightPad" type="number" min="0" value="36">
+                </div>
+                <div class="half-row">
+                  <div>
+                    <label for="textInset">左方空余 px</label>
+                    <input id="textInset" type="number" min="0" value="190">
+                  </div>
+                  <div>
+                    <label for="noAvatarTextInset">左方空余（无头像） px</label>
+                    <input id="noAvatarTextInset" type="number" min="0" value="120">
+                  </div>
                 </div>
                 <div class="full">
                   <label for="fontFamily">字体</label>
@@ -1456,13 +1634,10 @@
                     <select id="singleRoleCapsuleTarget" style="display:none;"></select>
                   </div>
                   <label for="capsuleFile">自定义胶囊底图</label>
-                  <div class="file-line">
-                    <div class="file-picker">
-                      <label class="file-picker-button" for="capsuleFile">浏览...</label>
-                      <span class="file-picker-name" id="capsuleFileName">未选择文件</span>
-                      <input id="capsuleFile" type="file" accept="image/*">
-                    </div>
+                  <div class="file-line capsule-bg-actions">
                     <button id="clearCapsuleImage" type="button">清除底图</button>
+                    <button class="file-picker-button" id="openCapsulePresetPanel" type="button">选择</button>
+                    <input id="capsuleFile" type="file" accept="image/*" hidden>
                   </div>
                   <p class="hint">上传后会用底图左中右三段来铺满胶囊，适合做带纹理或渐变的自定义底图。</p>
                   <div id="capsuleCropEditor"></div>
@@ -1502,14 +1677,6 @@
                     <option value="right">右对齐</option>
                   </select>
                 </div>
-                <div>
-                  <label for="textInset">有头像时文字锚点 X px</label>
-                  <input id="textInset" type="number" min="0" value="190">
-                </div>
-                <div>
-                  <label for="noAvatarTextInset">无头像时文字锚点 X px</label>
-                  <input id="noAvatarTextInset" type="number" min="0" value="120">
-                </div>
               </div>
             </div>
           </details>
@@ -1542,6 +1709,10 @@
   <div class="page-credit">b站 灵殊Nova 制作</div>
 
   <div id="globalSkillWorkspace" class="global-skill-workspace" aria-live="polite"></div>
+  <div id="avatarPresetPanel" class="avatar-preset-panel" aria-live="polite"></div>
+  <input id="avatarPresetUpload" type="file" accept="image/*" hidden>
+  <div id="capsulePresetPanel" class="avatar-preset-panel" aria-live="polite"></div>
+  <input id="capsulePresetUpload" type="file" accept="image/*" hidden>
 
   <script src="assets/default-preset.js"></script>
   <script>
@@ -1581,6 +1752,8 @@
     const PRESET_STORAGE_KEY = "wuthering_combo_builder_presets_v1";
     const PRESET_DB_NAME = "wuthering_combo_builder_db";
     const PRESET_DB_STORE = "presets";
+    const AVATAR_PRESET_STORAGE_KEY = "wuthering_avatar_presets_v1";
+    const CAPSULE_PRESET_STORAGE_KEY = "wuthering_capsule_presets_v1";
 
     const state = {
       layoutMode: "vertical",
@@ -1609,6 +1782,8 @@
     let skillWorkspacePosition = { x: 28, y: 112 };
     let presetStoreCache = [];
     let presetStoreReady = null;
+    let avatarPresetDeleteMode = false;
+    let capsulePresetDeleteMode = false;
     const skillSelectionRanges = new Map();
 
     let presetStatusTimer = null;
@@ -1968,6 +2143,21 @@
       return Boolean(capsule?.image || capsule?.imageOriginal);
     }
 
+    function hasCustomCapsuleStretch(capsule) {
+      const stretch = normalizeCapsuleStretch(capsule?.stretch || defaultCapsuleStretch());
+      const fallback = defaultCapsuleStretch();
+      return Math.abs(stretch.left - fallback.left) > 0.01 || Math.abs(stretch.right - fallback.right) > 0.01;
+    }
+
+    function hasCustomCapsuleCrop(capsule) {
+      const crop = normalizeRectCrop(capsule?.crop || defaultRectCrop());
+      const fallback = defaultRectCrop();
+      return Math.abs(crop.x - fallback.x) > 0.01
+        || Math.abs(crop.y - fallback.y) > 0.01
+        || Math.abs(crop.w - fallback.w) > 0.01
+        || Math.abs(crop.h - fallback.h) > 0.01;
+    }
+
     function getGlobalCapsuleConfig() {
       return globalCapsuleConfig;
     }
@@ -1989,7 +2179,19 @@
     function getCapsuleConfigForRole(role) {
       if (!state.singleRoleCapsuleMode || !role) return getGlobalCapsuleConfig();
       const roleCapsule = ensureRoleCapsuleConfig(role);
-      return hasCustomCapsuleImage(roleCapsule) ? roleCapsule : getGlobalCapsuleConfig();
+      if (hasCustomCapsuleImage(roleCapsule)) return roleCapsule;
+
+      const globalCapsule = getGlobalCapsuleConfig();
+      if (!hasCustomCapsuleImage(globalCapsule)) return roleCapsule;
+
+      return {
+        ...roleCapsule,
+        image: globalCapsule.image,
+        imageOriginal: globalCapsule.imageOriginal,
+        imageLabel: globalCapsule.imageLabel,
+        crop: hasCustomCapsuleCrop(roleCapsule) ? roleCapsule.crop : safeClone(globalCapsule.crop, defaultRectCrop()),
+        stretch: hasCustomCapsuleStretch(roleCapsule) ? roleCapsule.stretch : safeClone(globalCapsule.stretch, defaultCapsuleStretch())
+      };
     }
 
     function resetCapsuleConfig(capsule) {
@@ -2066,6 +2268,23 @@
       draw();
     }
 
+    function insertRoleAfter(roleId) {
+      const index = state.roles.findIndex((role) => role.id === roleId);
+      const insertIndex = index >= 0 ? index + 1 : state.roles.length;
+      state.roles.splice(insertIndex, 0, {
+        id: uid(),
+        name: `角色${state.roles.length + 1}`,
+        avatar: "",
+        avatarOriginal: "",
+        avatarInput: "",
+        crop: defaultCrop(),
+        fileLabel: "",
+        capsule: defaultCapsuleConfig()
+      });
+      renderEditors();
+      draw();
+    }
+
     function createSkill(roleId = "", text = "") {
       const resolvedRoleId = roleId || state.roles[0]?.id || "";
       return {
@@ -2110,6 +2329,351 @@
 
     function roleById(id) {
       return state.roles.find((role) => role.id === id);
+    }
+
+    function normalizeAvatarPreset(item) {
+      return {
+        id: String(item?.id || uid()),
+        name: String(item?.name || "未命名角色").trim() || "未命名角色",
+        avatar: String(item?.avatar || item?.avatarOriginal || ""),
+        avatarOriginal: String(item?.avatarOriginal || item?.avatar || ""),
+        crop: safeClone(item?.crop, defaultCrop()),
+        fileLabel: String(item?.fileLabel || ""),
+        savedAt: typeof item?.savedAt === "string" ? item.savedAt : new Date().toISOString()
+      };
+    }
+
+    function getDefaultAvatarPresets() {
+      const roles = Array.isArray(window.builtinDefaultPreset?.roles) ? window.builtinDefaultPreset.roles.slice(0, 3) : [];
+      return roles.map((role, index) => normalizeAvatarPreset({
+        id: `default-${index + 1}`,
+        name: role?.name || `默认${index + 1}`,
+        avatar: role?.avatar || role?.avatarOriginal || "",
+        avatarOriginal: role?.avatarOriginal || role?.avatar || "",
+        crop: safeClone(role?.crop, defaultCrop()),
+        fileLabel: role?.fileLabel || ""
+      }));
+    }
+
+    function readAvatarPresetStore() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(AVATAR_PRESET_STORAGE_KEY) || "[]");
+        return Array.isArray(parsed) ? parsed.map(normalizeAvatarPreset) : [];
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function writeAvatarPresetStore(items) {
+      localStorage.setItem(AVATAR_PRESET_STORAGE_KEY, JSON.stringify(items.map(normalizeAvatarPreset)));
+    }
+
+    function getAvatarPresetById(id) {
+      return [...getDefaultAvatarPresets(), ...readAvatarPresetStore()].find((preset) => preset.id === id) || null;
+    }
+
+    function saveAvatarPresetFromRole(role) {
+      if (!role || !role.avatarOriginal) return false;
+      const items = readAvatarPresetStore();
+      items.unshift(normalizeAvatarPreset({
+        id: uid(),
+        name: role.name || "未命名角色",
+        avatar: role.avatar || role.avatarOriginal,
+        avatarOriginal: role.avatarOriginal,
+        crop: safeClone(role.crop, defaultCrop()),
+        fileLabel: role.fileLabel || ""
+      }));
+      writeAvatarPresetStore(items);
+      renderAvatarPresetPanel();
+      setPresetStatus(`已保存头像预设：${role.name || "未命名角色"}`);
+      return true;
+    }
+
+    function deleteAvatarPreset(id) {
+      writeAvatarPresetStore(readAvatarPresetStore().filter((preset) => preset.id !== id));
+      renderAvatarPresetPanel();
+      setPresetStatus("已删除头像预设");
+    }
+
+    function openAvatarPresetPanel(roleId, anchorEl) {
+      const panel = $("avatarPresetPanel");
+      if (!panel || !roleById(roleId)) return;
+      panel.dataset.roleId = roleId;
+      avatarPresetDeleteMode = false;
+      panel.classList.add("is-open");
+      renderAvatarPresetPanel();
+      const rect = anchorEl?.getBoundingClientRect?.();
+      if (rect) {
+        const maxLeft = Math.max(16, window.innerWidth - panel.offsetWidth - 16);
+        const left = Math.min(Math.max(16, rect.left), maxLeft);
+        const top = Math.min(rect.bottom + 10, Math.max(16, window.innerHeight - panel.offsetHeight - 16));
+        panel.style.left = `${left}px`;
+        panel.style.top = `${top}px`;
+      }
+    }
+
+    function closeAvatarPresetPanel() {
+      const panel = $("avatarPresetPanel");
+      if (!panel) return;
+      panel.classList.remove("is-open", "is-delete-mode");
+      panel.dataset.roleId = "";
+      avatarPresetDeleteMode = false;
+    }
+
+    function renderAvatarPresetPanel() {
+      const panel = $("avatarPresetPanel");
+      if (!panel) return;
+      const defaults = getDefaultAvatarPresets();
+      const custom = readAvatarPresetStore();
+      panel.classList.toggle("is-delete-mode", avatarPresetDeleteMode);
+      panel.innerHTML = `
+        <div class="avatar-preset-panel__head">
+          <div class="avatar-preset-panel__title">
+            <strong>头像预设</strong>
+            <span>点击头像即可填入当前角色；左上角加号上传新头像，删除模式仅作用于自定义预设。</span>
+          </div>
+          <button type="button" class="avatar-preset-delete-toggle" data-action="toggle-avatar-delete" title="删除自定义预设">×</button>
+        </div>
+        <div class="avatar-preset-panel__grid">
+          <button type="button" class="avatar-preset-tile is-tool" data-action="upload-avatar" title="upload">+</button>
+          ${[...defaults, ...custom].map((preset) => {
+            const isDefault = String(preset.id || "").startsWith("default-");
+            return `
+              <button type="button" class="avatar-preset-tile${isDefault ? " is-default" : ""}" data-action="apply-avatar-preset" data-preset-id="${escapeAttr(preset.id)}">
+                <img src="${escapeAttr(preset.avatar || preset.avatarOriginal || "")}" alt="">
+                <span>${escapeHtml(preset.name || "未命名角色")}</span>
+                ${avatarPresetDeleteMode && !isDefault ? `<span class="avatar-preset-delete" data-action="delete-avatar-preset" data-preset-id="${escapeAttr(preset.id)}">×</span>` : ""}
+              </button>
+            `;
+          }).join("")}
+        </div>
+      `;
+    }
+
+    async function importAvatarFileToRole(role, file) {
+      if (!role || !file) return false;
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error || new Error("avatar_read_failed"));
+        reader.readAsDataURL(file);
+      });
+      await setRoleAvatarSource(role, dataUrl, { resetCrop: true, avatarInput: "", fileLabel: "" });
+      renderEditors();
+      draw();
+      return true;
+    }
+
+    function applyAvatarPresetToRole(role, preset) {
+      if (!role || !preset) return;
+      role.name = preset.name || role.name;
+      role.crop = safeClone(preset.crop, defaultCrop());
+      role.fileLabel = "";
+      role.avatarOriginal = preset.avatarOriginal || preset.avatar || "";
+      role.avatar = preset.avatar || role.avatarOriginal;
+      applyRoleCrop(role).then(() => {
+        renderEditors();
+        draw();
+      });
+    }
+
+    function normalizeCapsulePreset(item) {
+      return {
+        id: String(item?.id || uid()),
+        name: String(item?.name || item?.imageLabel || "未命名底图").trim() || "未命名底图",
+        image: String(item?.image || item?.imageOriginal || ""),
+        imageOriginal: String(item?.imageOriginal || item?.image || ""),
+        crop: safeClone(item?.crop, defaultRectCrop()),
+        stretch: safeClone(item?.stretch, defaultCapsuleStretch()),
+        imageLabel: String(item?.imageLabel || item?.name || ""),
+        savedAt: typeof item?.savedAt === "string" ? item.savedAt : new Date().toISOString()
+      };
+    }
+
+    function getDefaultCapsulePresets() {
+      const preset = window.builtinDefaultPreset || {};
+      const defaults = [];
+      if (preset.capsuleImageOriginal || preset.capsuleImage) {
+        defaults.push(normalizeCapsulePreset({
+          id: "default-capsule-1",
+          name: "琳奈像素",
+          image: preset.capsuleImage || preset.capsuleImageOriginal || "",
+          imageOriginal: preset.capsuleImageOriginal || preset.capsuleImage || "",
+          crop: safeClone(preset.capsuleCrop, defaultRectCrop()),
+          stretch: safeClone(preset.capsuleStretch, defaultCapsuleStretch()),
+          imageLabel: "琳奈像素"
+        }));
+      }
+
+      defaults.push(
+        normalizeCapsulePreset({
+          id: "default-capsule-2",
+          name: "赞妮领带",
+          image: "assets/capsule-presets/capsule-1-cropped.png",
+          imageOriginal: "assets/capsule-presets/capsule-1.png",
+          crop: { x: 10.697674812888607, y: 22.293611224799115, w: 82.43755370147468, h: 43.1238660729012 },
+          stretch: { left: 12.966253188705965, right: 88.09946906873907 },
+          imageLabel: "赞妮领带"
+        }),
+        normalizeCapsulePreset({
+          id: "default-capsule-3",
+          name: "卡卡的提",
+          image: "assets/capsule-presets/capsule-2-cropped.png",
+          imageOriginal: "assets/capsule-presets/capsule-2.png",
+          crop: { x: 10, y: 22.12450060497588, w: 83.42807897917676, h: 59.10508414361874 },
+          stretch: { left: 18.211852988200512, right: 81.57134492062389 },
+          imageLabel: "卡卡的提"
+        }),
+        normalizeCapsulePreset({
+          id: "default-capsule-4",
+          name: "西西纸条",
+          image: "assets/capsule-presets/capsule-3-cropped.png",
+          imageOriginal: "assets/capsule-presets/capsule-3.png",
+          crop: { x: 13.0577075573825, y: 17.33296853175125, w: 77.149008423167, h: 54.68582491397831 },
+          stretch: { left: 18.008261313616735, right: 82.53880131225934 },
+          imageLabel: "西西纸条"
+        })
+      );
+
+      return defaults;
+    }
+
+    function readCapsulePresetStore() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(CAPSULE_PRESET_STORAGE_KEY) || "[]");
+        return Array.isArray(parsed) ? parsed.map(normalizeCapsulePreset) : [];
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function writeCapsulePresetStore(items) {
+      localStorage.setItem(CAPSULE_PRESET_STORAGE_KEY, JSON.stringify(items.map(normalizeCapsulePreset)));
+    }
+
+    function getCapsulePresetById(id) {
+      return [...getDefaultCapsulePresets(), ...readCapsulePresetStore()].find((preset) => preset.id === id) || null;
+    }
+
+    function saveCapsulePresetFromCurrentConfig() {
+      const capsule = getEditingCapsuleConfig();
+      if (!capsule?.imageOriginal) {
+        setPresetStatus("请先选择一张胶囊底图再保存预设。", true);
+        return false;
+      }
+      const items = readCapsulePresetStore();
+      const name = capsule.imageLabel || `底图预设 ${items.length + 1}`;
+      items.unshift(normalizeCapsulePreset({
+        id: uid(),
+        name,
+        image: capsule.image || capsule.imageOriginal,
+        imageOriginal: capsule.imageOriginal,
+        crop: safeClone(capsule.crop, defaultRectCrop()),
+        stretch: safeClone(capsule.stretch, defaultCapsuleStretch()),
+        imageLabel: capsule.imageLabel || name
+      }));
+      writeCapsulePresetStore(items);
+      renderCapsulePresetPanel();
+      setPresetStatus(`已保存底图预设：${name}`);
+      return true;
+    }
+
+    function deleteCapsulePreset(id) {
+      writeCapsulePresetStore(readCapsulePresetStore().filter((preset) => preset.id !== id));
+      renderCapsulePresetPanel();
+      setPresetStatus("已删除底图预设");
+    }
+
+    function openCapsulePresetPanel(anchorEl) {
+      const panel = $("capsulePresetPanel");
+      if (!panel) return;
+      capsulePresetDeleteMode = false;
+      panel.classList.add("is-open");
+      renderCapsulePresetPanel();
+      const rect = anchorEl?.getBoundingClientRect?.();
+      if (rect) {
+        const maxLeft = Math.max(16, window.innerWidth - panel.offsetWidth - 16);
+        const left = Math.min(Math.max(16, rect.left), maxLeft);
+        const top = Math.min(rect.bottom + 10, Math.max(16, window.innerHeight - panel.offsetHeight - 16));
+        panel.style.left = `${left}px`;
+        panel.style.top = `${top}px`;
+      }
+    }
+
+    function closeCapsulePresetPanel() {
+      const panel = $("capsulePresetPanel");
+      if (!panel) return;
+      panel.classList.remove("is-open", "is-delete-mode");
+      capsulePresetDeleteMode = false;
+    }
+
+    function renderCapsulePresetPanel() {
+      const panel = $("capsulePresetPanel");
+      if (!panel) return;
+      const defaults = getDefaultCapsulePresets();
+      const custom = readCapsulePresetStore();
+      panel.classList.toggle("is-delete-mode", capsulePresetDeleteMode);
+      panel.innerHTML = `
+        <div class="avatar-preset-panel__head">
+          <div class="avatar-preset-panel__title">
+            <strong>底图预设</strong>
+            <span>点击底图即可填入当前编辑的胶囊底图；左上角加号上传新底图，删除模式仅作用于自定义预设。</span>
+          </div>
+          <button type="button" class="avatar-preset-delete-toggle" data-action="toggle-capsule-delete" title="删除自定义预设">×</button>
+        </div>
+        <div class="avatar-preset-panel__grid">
+          <button type="button" class="avatar-preset-tile is-tool capsule-preset-tile" data-action="upload-capsule" title="upload">+</button>
+          ${[...defaults, ...custom].map((preset) => {
+            const isDefault = String(preset.id || "").startsWith("default-");
+            return `
+              <button type="button" class="avatar-preset-tile capsule-preset-tile${isDefault ? " is-default" : ""}" data-action="apply-capsule-preset" data-preset-id="${escapeAttr(preset.id)}">
+                <img src="${escapeAttr(preset.image || preset.imageOriginal || "")}" alt="">
+                <span>${escapeHtml(preset.name || "未命名底图")}</span>
+                ${capsulePresetDeleteMode && !isDefault ? `<span class="avatar-preset-delete" data-action="delete-capsule-preset" data-preset-id="${escapeAttr(preset.id)}">×</span>` : ""}
+              </button>
+            `;
+          }).join("")}
+        </div>
+      `;
+    }
+
+    async function importCapsuleFileToCurrentConfig(file) {
+      if (!file) return false;
+      const capsule = getEditingCapsuleConfig();
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error || new Error("capsule_read_failed"));
+        reader.readAsDataURL(file);
+      });
+      await setCapsuleImageSource(dataUrl, { resetCrop: true, fileLabel: file.name }, capsule);
+      updateCapsuleFileLabelUI();
+      draw();
+      return true;
+    }
+
+    async function applyCapsulePresetToCurrentConfig(preset) {
+      if (!preset) return;
+      const capsule = getEditingCapsuleConfig();
+      const presetImage = preset.image || "";
+      const presetImageDataUrl = presetImage && !presetImage.startsWith("data:")
+        ? await loadImageAsDataUrl(presetImage)
+        : presetImage;
+      capsule.crop = safeClone(preset.crop, defaultRectCrop());
+      capsule.stretch = safeClone(preset.stretch, defaultCapsuleStretch());
+      capsule.stretchEditing = false;
+      capsule.imageLabel = preset.imageLabel || preset.name || "";
+      capsule.imageOriginal = preset.imageOriginal || preset.image || "";
+      capsule.image = presetImageDataUrl || preset.image || capsule.imageOriginal;
+      try {
+        await applyCapsuleCrop(capsule);
+      } catch (_) {
+        capsule.image = presetImageDataUrl || preset.image || capsule.imageOriginal;
+      }
+      if (presetImageDataUrl || preset.image) capsule.image = presetImageDataUrl || preset.image;
+      renderCapsuleCropEditor();
+      updateCapsuleFileLabelUI();
+      draw();
     }
 
     function updateRoleNameUI(card, role) {
@@ -2382,7 +2946,7 @@
     function renderRoles() {
       const list = $("roleList");
       if (!state.roles.length) {
-        list.innerHTML = '<div class="empty">还没有角色，点击“添加角色”开始。</div>';
+        list.innerHTML = '<div class="empty">还没有角色，点击“+添加”开始。<div style="margin-top:10px;"><button class="soft" data-action="add-role-after">+添加</button></div></div>';
         return;
       }
 
@@ -2393,20 +2957,19 @@
               <img class="avatar-mini" src="${role.avatar || demoImages[index % demoImages.length]}" alt="">
               <span>${escapeHtml(role.name || "未命名角色")}</span>
             </div>
-            <button class="danger" data-action="delete-role">删除</button>
+            <div class="actions">
+              <button class="danger" data-action="delete-role">删除</button>
+              <button class="soft" data-action="add-role-after">+添加</button>
+            </div>
           </div>
           <div class="grid">
             <div>
               <label>角色名称</label>
               <input data-field="role-name" value="${escapeAttr(role.name)}">
             </div>
-            <div>
+            <div class="role-avatar-action">
               <label>本地头像</label>
-              <div class="file-picker">
-                <label class="file-picker-button" for="role-file-${role.id}">浏览...</label>
-                <span class="file-picker-name">${escapeHtml(role.fileLabel || "未选择文件")}</span>
-                <input id="role-file-${role.id}" data-field="role-file" type="file" accept="image/*">
-              </div>
+              <button type="button" class="file-picker-button" data-action="open-avatar-preset" data-role-id="${role.id}">选择</button>
             </div>
           </div>
           ${role.avatarOriginal ? `
@@ -2427,6 +2990,7 @@
                 <div class="actions">
                   <button type="button" data-action="center-crop">居中取景</button>
                   <button type="button" data-action="reset-crop">重置裁剪</button>
+                  <button type="button" data-action="save-avatar-preset">保存预设</button>
                 </div>
               </div>
             </div>
@@ -2729,8 +3293,8 @@
       const crop = normalizeRectCrop(cropInput);
       const stretch = normalizeCapsuleStretch(stretchInput);
       const aspect = crop.h > 0 ? crop.w / crop.h : 1;
-      const fixedRatio = (stretch.left / 100) + ((100 - stretch.right) / 100);
-      return h * aspect * fixedRatio;
+      const fixedRatio = Math.max(0, (stretch.left / 100) + ((100 - stretch.right) / 100));
+      return Math.max(1, h * aspect * fixedRatio);
     }
 
     function getRectCropMetrics(imageWidth, imageHeight, cropInput = defaultRectCrop()) {
@@ -2953,7 +3517,7 @@
               <span>%</span>
             </div>
             <div class="actions">
-              <button type="button" data-action="center-capsule-crop">居中取景</button>
+              <button type="button" data-action="save-capsule-preset">保存预设</button>
               <button type="button" data-action="reset-capsule-crop">重置裁剪</button>
               <button type="button" data-action="toggle-capsule-stretch">${capsule.stretchEditing ? "完成" : "拉伸单元自定义"}</button>
             </div>
@@ -3182,6 +3746,23 @@
       const ctx = canvas.getContext("2d");
       ctx.drawImage(image, metrics.sx, metrics.sy, metrics.sourceWidth, metrics.sourceHeight, 0, 0, outputWidth, outputHeight);
       capsule.image = canvas.toDataURL("image/png");
+    }
+
+    async function loadImageAsDataUrl(src) {
+      const image = await loadImage(src);
+      if (!image) return "";
+      const width = Math.max(1, image.naturalWidth || image.width || 1);
+      const height = Math.max(1, image.naturalHeight || image.height || 1);
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(image, 0, 0, width, height);
+      try {
+        return canvas.toDataURL("image/png");
+      } catch (_) {
+        return "";
+      }
     }
 
     function readCapsuleStyleSetting(id) {
@@ -3586,7 +4167,7 @@
         if (manualWidth != null) return manualWidth;
       }
 
-      if (!isHorizontalFamilyMode(settings.mode) || settings.widthMode === "fixed") {
+      if (settings.widthMode === "fixed") {
         return settings.w;
       }
 
@@ -3594,17 +4175,18 @@
       const textWidth = Math.ceil(measureRichTextMaxLineWidth(ctx, getSkillRichHtml(skill), settings));
       ctx.restore();
 
-      const textAnchorOffset = Math.max(0, hasAvatar ? settings.textInset : settings.noAvatarTextInset);
-      const textLeft = settings.textAlign === "left" ? textAnchorOffset : settings.textAlign === "center" ? textAnchorOffset - textWidth / 2 : textAnchorOffset - textWidth;
-      const textRight = settings.textAlign === "left" ? textAnchorOffset + textWidth : settings.textAlign === "center" ? textAnchorOffset + textWidth / 2 : textAnchorOffset;
+      const leftPad = Math.max(0, hasAvatar ? settings.textInset : settings.noAvatarTextInset);
+      const rightPad = Math.max(0, settings.rightPad);
+      const textLeft = settings.textAlign === "left" ? leftPad : settings.textAlign === "center" ? leftPad - textWidth / 2 : leftPad - textWidth;
+      const textRight = settings.textAlign === "left" ? leftPad + textWidth : settings.textAlign === "center" ? leftPad + textWidth / 2 : leftPad;
       const avatarReach = hasAvatar ? settings.avatarInset + avatarSize : 0;
       const contentRight = Math.max(avatarReach, textRight);
-      const contentLeft = Math.max(16, Math.min(hasAvatar ? settings.avatarInset : 16, textLeft));
+      const contentLeft = Math.max(0, Math.min(hasAvatar ? settings.avatarInset : leftPad, textLeft));
       const capsule = getCapsuleConfigForRole(role);
       const minCapsuleWidth = capsule.image
         ? getCapsuleStretchMinWidth(settings.h, capsule.crop, capsule.stretch)
         : settings.h + 24;
-      const autoWidth = Math.ceil(Math.max(minCapsuleWidth, contentRight + settings.rightPad, contentLeft + textWidth + settings.rightPad));
+      const autoWidth = Math.ceil(Math.max(minCapsuleWidth, contentRight + rightPad, contentLeft + textWidth + rightPad));
       return autoWidth;
     }
 
@@ -4066,6 +4648,13 @@
       saveSkillEditorSelection(editor);
     }
 
+    function syncSkillCardOptionState(card, skill) {
+      if (!card || !skill) return;
+      card.classList.toggle("is-line-break", isSkillDirectBreak(skill));
+      card.classList.toggle("is-transparent-bg", Boolean(skill.hideBackground));
+      card.classList.toggle("is-option-active", hasSkillOptionActive(skill));
+    }
+
     function normalizeSkillEditorDom(skill, editor) {
       if (!skill || !editor) return;
       const sanitized = getSkillRichHtml({ richText: editor.innerHTML, text: skill.text });
@@ -4243,7 +4832,6 @@
       syncSkillEditorState(skill, editor);
     }
 
-    $("addRole").addEventListener("click", () => addRole(`角色${state.roles.length + 1}`, ""));
     $("addSkill").addEventListener("click", () => addSkill());
     $("fitCanvas").addEventListener("click", fitCanvasToContent);
     $("exportCapsules").addEventListener("click", () => {
@@ -4311,6 +4899,10 @@
       event.target.value = "";
     });
 
+    $("openCapsulePresetPanel").addEventListener("click", (event) => {
+      openCapsulePresetPanel(event.target);
+    });
+
     $("clearCapsuleImage").addEventListener("click", () => {
       const capsule = getEditingCapsuleConfig();
       resetCapsuleConfig(capsule);
@@ -4319,6 +4911,105 @@
       updateCapsuleFileLabelUI();
       draw();
     });
+
+    $("capsulePresetPanel").addEventListener("click", async (event) => {
+      const actionNode = event.target.closest("[data-action]");
+      if (!actionNode) return;
+      const action = actionNode.dataset.action;
+
+      if (action === "upload-capsule") {
+        const upload = $("capsulePresetUpload");
+        upload.value = "";
+        upload.click();
+        return;
+      }
+
+      if (action === "toggle-capsule-delete") {
+        capsulePresetDeleteMode = !capsulePresetDeleteMode;
+        renderCapsulePresetPanel();
+        return;
+      }
+
+      if (action === "delete-capsule-preset") {
+        event.preventDefault();
+        event.stopPropagation();
+        deleteCapsulePreset(actionNode.dataset.presetId);
+        return;
+      }
+
+      if (action === "apply-capsule-preset") {
+        if (capsulePresetDeleteMode) return;
+        const preset = getCapsulePresetById(actionNode.dataset.presetId);
+        await applyCapsulePresetToCurrentConfig(preset);
+        closeCapsulePresetPanel();
+      }
+    });
+
+    $("capsulePresetUpload").addEventListener("change", async (event) => {
+      const file = event.target.files?.[0];
+      if (file) await importCapsuleFileToCurrentConfig(file);
+      event.target.value = "";
+    });
+
+    $("avatarPresetPanel").addEventListener("click", async (event) => {
+      const panel = $("avatarPresetPanel");
+      const actionNode = event.target.closest("[data-action]");
+      if (!actionNode) return;
+      const role = roleById(panel.dataset.roleId);
+      if (!role) return;
+      const action = actionNode.dataset.action;
+
+      if (action === "upload-avatar") {
+        const upload = $("avatarPresetUpload");
+        upload.dataset.roleId = role.id;
+        upload.value = "";
+        upload.click();
+        return;
+      }
+
+      if (action === "toggle-avatar-delete") {
+        avatarPresetDeleteMode = !avatarPresetDeleteMode;
+        renderAvatarPresetPanel();
+        return;
+      }
+
+      if (action === "delete-avatar-preset") {
+        event.preventDefault();
+        event.stopPropagation();
+        deleteAvatarPreset(actionNode.dataset.presetId);
+        return;
+      }
+
+      if (action === "apply-avatar-preset") {
+        if (avatarPresetDeleteMode) return;
+        const preset = getAvatarPresetById(actionNode.dataset.presetId);
+        applyAvatarPresetToRole(role, preset);
+        closeAvatarPresetPanel();
+      }
+    });
+
+    $("avatarPresetUpload").addEventListener("change", async (event) => {
+      const file = event.target.files?.[0];
+      const role = roleById(event.target.dataset.roleId || $("avatarPresetPanel").dataset.roleId);
+      if (file && role) await importAvatarFileToRole(role, file);
+      event.target.value = "";
+    });
+
+    document.addEventListener("click", (event) => {
+      const panel = $("avatarPresetPanel");
+      if (!panel?.classList.contains("is-open")) return;
+      if (panel.contains(event.target)) return;
+      if (event.target.closest?.("[data-action='open-avatar-preset']")) return;
+      closeAvatarPresetPanel();
+    }, true);
+
+    document.addEventListener("click", (event) => {
+      const panel = $("capsulePresetPanel");
+      if (!panel?.classList.contains("is-open")) return;
+      if (panel.contains(event.target)) return;
+      if (event.target.closest?.("#openCapsulePresetPanel")) return;
+      closeCapsulePresetPanel();
+    }, true);
 
     $("roleList").addEventListener("input", (event) => {
       const card = event.target.closest("[data-role-id]");
@@ -4352,21 +5043,7 @@
       if (event.target.dataset.field === "role-name") {
         role.name = event.target.value;
         event.stopImmediatePropagation();
-        return;
       }
-
-      if (event.target.dataset.field !== "role-file") return;
-      const file = event.target.files?.[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = async () => {
-        await setRoleAvatarSource(role, reader.result, { resetCrop: true, avatarInput: "", fileLabel: file.name });
-        renderEditors();
-        draw();
-      };
-      reader.readAsDataURL(file);
-      event.target.value = "";
-      event.stopImmediatePropagation();
     }, true);
 
     $("roleList").addEventListener("focusout", (event) => {
@@ -4418,11 +5095,28 @@
     $("roleList").addEventListener("pointercancel", (event) => finishCropDrag(event.pointerId), true);
 
     $("roleList").addEventListener("click", (event) => {
+      const action = event.target.dataset.action;
+      if (action === "add-role-after" && !event.target.closest("[data-role-id]")) {
+        addRole(`角色${state.roles.length + 1}`, "");
+        event.stopImmediatePropagation();
+        return;
+      }
       const card = event.target.closest("[data-role-id]");
       if (!card) return;
       const roleId = card.dataset.roleId;
       const role = roleById(roleId);
-      const action = event.target.dataset.action;
+
+      if (action === "open-avatar-preset" && role) {
+        openAvatarPresetPanel(roleId, event.target);
+        event.stopImmediatePropagation();
+        return;
+      }
+
+      if (action === "save-avatar-preset" && role) {
+        saveAvatarPresetFromRole(role);
+        event.stopImmediatePropagation();
+        return;
+      }
 
       if (action === "center-crop" && role) {
         role.crop = { ...(role.crop || defaultCrop()), x: 50, y: 50 };
@@ -4436,6 +5130,12 @@
         role.crop = defaultCrop();
         updateRoleCropUI(card, role);
         requestRoleCropUpdate(role, card);
+        event.stopImmediatePropagation();
+        return;
+      }
+
+      if (action === "add-role-after") {
+        insertRoleAfter(roleId);
         event.stopImmediatePropagation();
         return;
       }
@@ -4539,6 +5239,11 @@
         } catch (_) {}
       }
       stage?.classList.remove("is-dragging");
+      if (activeCapsuleCropDrag?.capsule) {
+        activeCapsuleCropDrag.capsule.stretch = normalizeCapsuleStretch(activeCapsuleCropDrag.capsule.stretch || defaultCapsuleStretch());
+      }
+      updateCapsuleCropUI();
+      draw();
       activeCapsuleCropDrag = null;
     }
 
@@ -4562,11 +5267,8 @@
     $("capsuleCropEditor").addEventListener("click", (event) => {
       const action = event.target.dataset.action;
       const capsule = getEditingCapsuleConfig();
-      if (action === "center-capsule-crop") {
-        const crop = normalizeRectCrop(capsule.crop || defaultRectCrop());
-        capsule.crop = { ...crop, x: (100 - crop.w) / 2, y: (100 - crop.h) / 2 };
-        updateCapsuleCropUI();
-        requestCapsuleCropUpdate(capsule);
+      if (action === "save-capsule-preset") {
+        saveCapsulePresetFromCurrentConfig();
       }
       if (action === "reset-capsule-crop") {
         capsule.crop = defaultRectCrop();
@@ -4730,7 +5432,10 @@
       const skill = state.skills.find((item) => item.id === card.dataset.skillId);
       if (!skill) return;
       if (event.target.dataset.field === "skill-role") skill.roleId = event.target.value;
-      if (event.target.dataset.field === "skill-hide-avatar") skill.hideAvatar = event.target.checked;
+      if (event.target.dataset.field === "skill-hide-avatar") {
+        skill.hideAvatar = event.target.checked;
+        syncSkillCardOptionState(card, skill);
+      }
       if (event.target.dataset.field === "skill-hide-background") {
         skill.hideBackground = event.target.checked;
         skill.transparentWidth = null;
@@ -4741,6 +5446,7 @@
       if (event.target.dataset.field === "skill-direct-break") {
         skill.directBreak = event.target.checked;
         skill.forceBreakBefore = event.target.checked;
+        syncSkillCardOptionState(card, skill);
       }
       draw();
     });
