@@ -1932,14 +1932,14 @@
       <div id="quickInputTip" class="quick-input-tip">“/”数量代表角色序号，“/”间内容代表胶囊内容，“。”头像隐藏，“：”底图透明，“；”直接换行</div>
       <textarea id="quickInputText" placeholder="例如/ae；///req：；。//zzz"></textarea>
       <div class="quick-input-dialog__actions">
-        <label class="quick-input-dialog__tools">转换图标<button id="quickInputIconHelp" class="quick-input-help" type="button" aria-expanded="false" aria-controls="quickInputIconTip" title="a/A=左键，z/Z=左键长按，d/s=右键，D/S=右键长按，e=技能，E=长按技能，r=解放，R=长按解放，q=声骸，Q=长按声骸，j=跳跃，J=长按跳跃，f/F=处决，t/T=工具，b/B=入场，y/Y=退场">?</button><input id="quickInputConvertIcons" type="checkbox"></label>
+        <label class="quick-input-dialog__tools">转换图标<button id="quickInputIconHelp" class="quick-input-help" type="button" aria-expanded="false" aria-controls="quickInputIconTip" title="大写一般为长按版本：a=普攻   z=重击   s/d/闪=闪避   e=技能   q=声骸   r=解放   j/跳=跳跃   t=工具   f=处决   b=变奏   y=延奏">?</button><input id="quickInputConvertIcons" type="checkbox"></label>
         <div class="quick-input-dialog__buttons">
           <button id="cancelQuickInput" type="button">取消</button>
           <button class="primary" id="replaceQuickInput" type="button">替换</button>
           <button class="soft" id="appendQuickInput" type="button">添加</button>
         </div>
       </div>
-      <div id="quickInputIconTip" class="quick-input-tip">a/A=左键，z/Z=左键长按，d/s=右键，D/S=右键长按，e=技能，E=长按技能，r=解放，R=长按解放，q=声骸，Q=长按声骸，j=跳跃，J=长按跳跃，f/F=处决，t/T=工具，b/B=入场，y/Y=退场</div>
+      <div id="quickInputIconTip" class="quick-input-tip">大写一般为长按版本：a=普攻   z=重击   s/d/闪=闪避   e=技能   q=声骸   r=解放   j/跳=跳跃   t=工具   f=处决   b=变奏   y=延奏</div>
     </div>
   </div>
   <div id="avatarPresetPanel" class="avatar-preset-panel" aria-live="polite"></div>
@@ -2591,7 +2591,9 @@
       y: "outro",
       Y: "outro",
       z: "mouse-left-hold",
-      Z: "mouse-left-hold"
+      Z: "mouse-left-hold",
+      跳: "jump",
+      闪: "mouse-right"
     };
 
     function quickInputTextToRichHtml(text, convertIcons = false) {
